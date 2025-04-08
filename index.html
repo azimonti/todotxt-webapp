@@ -10,8 +10,10 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/img/icons/todotxt-180x180.png">
   <meta http-equiv="content-language" content="en-us">
   <title>Todo.txt Webapp</title>
-  <link rel="manifest" href="/data/json/manifest.min.json">
+  <link rel="manifest" href="/data/json/manifest.json">
   <link rel="canonical" href="https://www.YOURURL.com/">
+  <link rel="stylesheet" href="/assets/css/lib/bootstrap-5.3.2.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
   <meta name="description" content="A simple web application for managing your todo.txt file.">
 </head>
 <body id="page-top">
@@ -19,12 +21,29 @@
       <br>
       <h1 style="visibility: hidden; position: absolute; height: 0; overflow: hidden;">Todo.txt Webapp</h1>
       <h2 class="text-centered">Todo.txt Tasks</h2>
-      <p>PLACEHOLDER.</p> <!-- Placeholder content -->
-      <p></p>
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Enter todo item" id="todoInput">
+        <button class="btn btn-primary" type="button" id="addButton">Add Todo</button>
+      </div>
+      <ul class="list-group jsTodoTxt" id="todoList">
+      </ul>
+      <button class="btn btn-primary mt-2" type="button" id="copyAllButton">Copy All</button>
     </div>
   </div>
   <script src="/assets/js/lib/bootstrap-5.3.2.min.js"></script>
-  <script src="/assets/js/lib/clipboard-2.0.11.min.js"></script>
+  <script src="/assets/js/lib/jquery-3.7.1.slim.min.js"></script>
   <script src="/assets/js/lib/jstodotxt.min.js"></script>
+  <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
+  <script src="/assets/js/lib/clipboard-2.0.11.min.js"></script>
+  <script src="/assets/js/lib/fontawesome-6.7.2.min.js"></script>
+  <script src="/assets/js/lib/solid-6.7.2.min.js"></script>
+  <script src="/assets/js/cache.js"></script>
+  <script src="/assets/js/todo.js"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+        .catch(error => console.error('Service Worker registration failed:', error));
+  }
+  </script>
 </body>
 </html>

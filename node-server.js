@@ -6,8 +6,8 @@ const https = require('https');
 const path = require('path');
 
 const app = express();
-const httpPort = 5000;
-const httpsPort = 8443; 
+const httpPort = 6000;
+const httpsPort = 8443;
 
 // Check for command line arguments
 const verbose = process.argv.includes('--verbose');
