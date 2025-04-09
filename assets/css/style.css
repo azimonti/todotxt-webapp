@@ -1,14 +1,19 @@
 body {
-    font-family: sans-serif;
-    background-color: #f8f9fa; /* Light gray background */
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+#todoList {
+  background-color: #2C2C2C;
 }
 
 .container {
     margin-top: 20px;
 }
 
+/* Removed margin-bottom from #todoInput to potentially fix alignment in input-group */
 #todoInput {
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
 }
 
 .list-group-item {
@@ -30,10 +35,37 @@ body {
     border-bottom-left-radius: 0.25rem;
 }
 
+.btn-group {
+    white-space: nowrap;
+}
+
 .btn-group button {
     margin-left: 5px;
 }
 
 .float-right {
     float: right;
+    display: inline-block;
+}
+
+/* Styles for completed tasks */
+.task-done {
+    background-color: #e9ecef; /* Light gray background for done items */
+}
+
+select.form-select {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #495057;
+}
+
+select.form-select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.task-done span {
+    color: #7E8E91; /* Gray text color */
+    text-decoration: line-through; /* Strikethrough text */
 }

@@ -6,8 +6,11 @@ const https = require('https');
 const path = require('path');
 
 const app = express();
-const httpPort = 6000;
+const httpPort = 5001;
 const httpsPort = 8443;
+
+// Middleware to parse JSON request bodies
+app.use(express.json());
 
 // Check for command line arguments
 const verbose = process.argv.includes('--verbose');
