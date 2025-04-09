@@ -31,6 +31,7 @@ function toggleTodoCompletion(listItem) {
   applyItemStyles(listItem, item); // Update styles
   listItem.find('span').text(item.toString()); // Update the text in the span
   listItem.find('button[title]').attr('title', item.complete() ? 'Mark as Incomplete' : 'Mark as Done'); // Update button title
+  loadTodos(todoList); // Add this line to reload the todos after completion toggle
 }
 
 function startEditTodo(listItem) {

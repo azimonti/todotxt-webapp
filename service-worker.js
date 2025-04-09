@@ -5,6 +5,8 @@ const assetsToCache = [
   '/data/json/manifest.json',
   '/data/json/version.json',
   '/assets/css/lib/bootstrap-5.3.2.min.css',
+  '/assets/css/lib/bootstrap-5.3.2.min.css.map',
+  '/assets/css/todo.css',
   '/assets/js/lib/bootstrap-5.3.2.min.js',
   '/assets/js/lib/bootstrap-5.3.2.min.js.map',
   '/assets/js/lib/clipboard-2.0.11.min.js',
