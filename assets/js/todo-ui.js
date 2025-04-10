@@ -3,10 +3,10 @@
 // Helper to get color based on priority
 function getPriorityColor(priority) {
   switch (priority) {
-    case 'A': return '#CC4027'; // Red
-    case 'B': return '#B4B22A'; // Yellow
-    case 'C': return '#3AC12B'; // Green
-    default: return '#F8F8F2'; // Default/Gray for D, E, F or no priority
+  case 'A': return '#CC4027'; // Red
+  case 'B': return '#B4B22A'; // Yellow
+  case 'C': return '#3AC12B'; // Green
+  default: return '#F8F8F2'; // Default/Gray for D, E, F or no priority
   }
 }
 
