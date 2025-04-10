@@ -1,12 +1,14 @@
-import { projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, copyAllButton, todoList } from './todo.js';
-import { addTodoToStorage, removeTodoFromStorage, getTodosFromStorage } from './todo-storage.js'; // Import storage functions
-import { loadTodos } from './todo-load.js'; // Import loadTodos
-import { addTodoToList } from './todo-ui.js'; // Import addTodoToList
-import { toggleTodoCompletion, startEditTodo, deleteTodoItem } from './todo.js'; // Import action functions
+/* global jsTodoTxt, ClipboardJS */
 
-$(document).ready(function () { // Wrap in document ready
+import { projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, todoList } from './todo.js';
+import { addTodoToStorage, removeTodoFromStorage, getTodosFromStorage } from './todo-storage.js';
+import { loadTodos } from './todo-load.js';
+import { addTodoToList } from './todo-ui.js';
+import { toggleTodoCompletion, startEditTodo, deleteTodoItem } from './todo.js';
+
+$(document).ready(function () {
   addButton.click(function () {
-      const editingId = addButton.data('editingId'); // Get the ID being edited, if any
+    const editingId = addButton.data('editingId'); // Get the ID being edited, if any
 
     if (editingId) {
       // --- Handle Saving Edit (Simplified: Delete + Add New) ---
@@ -25,10 +27,10 @@ $(document).ready(function () { // Wrap in document ready
         // Prepend priority if selected or if present in the input text itself
         const inputPriorityMatch = newTodoText.match(/^\( *([A-Z]) *\) /);
         if (priority) {
-            newTodoText = `(${priority}) ${newTodoText.replace(/^\( *[A-Z] *\) /, '')}`; // Replace existing if dropdown used
+          newTodoText = `(${priority}) ${newTodoText.replace(/^\( *[A-Z] *\) /, '')}`; // Replace existing if dropdown used
         } else if (inputPriorityMatch) {
-            // Keep priority parsed from input if dropdown wasn't used
-            // No change needed to newTodoText
+          // Keep priority parsed from input if dropdown wasn't used
+          // No change needed to newTodoText
         }
 
         // Append project/context if selected via dropdowns (avoid duplicates if already in text)
@@ -55,9 +57,9 @@ $(document).ready(function () { // Wrap in document ready
         // Reload the list to show the change and ensure correct sorting/filtering
         loadTodos(todoList);
       } else {
-         // If new text is empty, just cancel edit without deleting
-         addButton.text('Add Todo').removeData('editingId');
-         todoInput.val('');
+        // If new text is empty, just cancel edit without deleting
+        addButton.text('Add Todo').removeData('editingId');
+        todoInput.val('');
       }
 
     } else {
@@ -82,9 +84,6 @@ $(document).ready(function () { // Wrap in document ready
         if (context) {
           todoText = `${todoText} @${context}`;
         }
-
-        // --- Removed automatic creation date addition ---
-
 
         // Pass the raw todoText string directly to storage
         addTodoToStorage(todoText);
@@ -180,17 +179,14 @@ $(document).ready(function () { // Wrap in document ready
     // Display filtered items
     // We need to find the original {id, text} object for each filtered item
     const filteredTodoObjects = sortedFilteredItems.map(filteredItem => {
-        // Find the original object whose text matches the filtered item's string representation
-        // This assumes toString() is consistent.
-        return todoObjects.find(obj => obj.text === filteredItem.toString());
+      // Find the original object whose text matches the filtered item's string representation
+      // This assumes toString() is consistent.
+      return todoObjects.find(obj => obj.text === filteredItem.toString());
     }).filter(obj => obj !== undefined); // Filter out any potential undefined results if match failed
 
     filteredTodoObjects.forEach(obj => {
-        // Pass the found object and the already parsed/filtered item to addTodoToList
-        addTodoToList(obj, new jsTodoTxt.Item(obj.text), todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem);
+      // Pass the found object and the already parsed/filtered item to addTodoToList
+      addTodoToList(obj, new jsTodoTxt.Item(obj.text), todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem);
     });
-
-    // Optional: Change button text to indicate filter is active?
-    // filterButton.text('Clear Filter'); // Need logic to toggle back
   });
-}); // Close document ready
+});

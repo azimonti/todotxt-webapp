@@ -1,19 +1,20 @@
+/* global jsTodoTxt */
+'use strict';
+
 import { loadTodos } from './todo-load.js';
 import './todo-event-handlers.js';
-import { removeTodoFromStorage, addTodoToStorage, updateTodoInStorage } from './todo-storage.js';
+import { removeTodoFromStorage, updateTodoInStorage } from './todo-storage.js';
 import { applyItemStyles } from './todo-ui.js';
 import './todo-import.js';
 
 const todoInput = $('#todoInput');
 const addButton = $('#addButton');
-const todoList = $('#todoList');
+const todoList = $('#todo-list');
 const copyAllButton = $('#copyAllButton');
 const prioritySelect = $('#prioritySelect');
 const projectSelect = $('#projectSelect');
 const contextSelect = $('#contextSelect');
 const filterButton = $('#filterButton');
-const importButton = $('#importButton');
-const importTextarea = $('#importTextarea');
 
 export { todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem, projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, copyAllButton }; // Added missing exports
 
@@ -25,6 +26,9 @@ function toggleTodoCompletion(listItem) {
   item.setComplete(!item.complete()); // Toggle completion
   if (item.complete()) {
     item.clearPriority(); // Remove priority when completed
+    if(item.created()){
+      item.setCompleted(new Date()); // If there is a creation date set the complete date
+    }
   }
 
   updateTodoInStorage(itemId, item); // Update in storage
@@ -60,10 +64,4 @@ function deleteTodoItem(listItem) {
 $(document).ready(function () {
 
   loadTodos(todoList);
-  
-  // --- Import Event Handlers ---
-  
-  // --- Import Import Functions ---
-  
-  // --- Initialization ---
 });

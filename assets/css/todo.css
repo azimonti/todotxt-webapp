@@ -3,69 +3,64 @@ body {
   margin: 20px;
 }
 
-#todoList {
+#todo-list {
   background-color: #2C2C2C;
 }
 
 .container {
-    margin-top: 20px;
-}
-
-/* Removed margin-bottom from #todoInput to potentially fix alignment in input-group */
-#todoInput {
-    /* margin-bottom: 10px; */
+  margin-top: 20px;
 }
 
 .list-group-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba(0,0,0,.125);
-    margin-bottom: -1px; /* Remove default spacing between list items */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(0 0 0 / 12.5%);
+  margin-bottom: -1px; /* Remove default spacing between list items */
 }
 
 .list-group-item:first-child {
-    border-top-left-radius: 0.25rem;
-    border-top-right-radius: 0.25rem;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
 }
 
 .list-group-item:last-child {
-    border-bottom-right-radius: 0.25rem;
-    border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
 }
 
 .btn-group {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .btn-group button {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 .float-right {
-    float: right;
-    display: inline-block;
+  float: right;
+  display: inline-block;
 }
 
 /* Styles for completed tasks */
 .task-done {
-    background-color: #e9ecef; /* Light gray background for done items */
+  background-color: #e9ecef; /* Light gray background for done items */
 }
 
 select.form-select {
-    background-color: #343a40;
-    color: #fff;
-    border: 1px solid #495057;
+  background-color: #343a40;
+  color: #fff;
+  border: 1px solid #495057;
 }
 
 select.form-select:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
 }
 
 .task-done span {
-    color: #7E8E91; /* Gray text color */
-    text-decoration: line-through; /* Strikethrough text */
+  color: #7E8E91; /* Gray text color */
+  text-decoration: line-through; /* Strikethrough text */
 }

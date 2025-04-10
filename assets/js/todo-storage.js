@@ -1,4 +1,4 @@
-// assets/js/todo-storage.js
+'use strict';
 
 // Helper to generate unique IDs
 function generateUniqueId() {
@@ -19,7 +19,7 @@ export function getTodosFromStorage() {
         }));
         saveTodosToStorage(todos);
         console.log("Migration complete.");
-      } else if (Array.isArray(parsedData) && (parsedData.length === 0 || (typeof parsedData[0] === 'object' && parsedData[0].hasOwnProperty('id') && parsedData[0].hasOwnProperty('text')))) {
+      } else if (Array.isArray(parsedData) && (parsedData.length === 0 || (typeof parsedData[0] === 'object' && Object.prototype.hasOwnProperty.call(parsedData[0], 'id') && Object.prototype.hasOwnProperty.call(parsedData[0], 'text')))) {
         todos = parsedData;
       } else {
         console.warn("Invalid data format in localStorage. Resetting todos.");

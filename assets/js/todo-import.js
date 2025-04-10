@@ -1,8 +1,11 @@
+/* global jsTodoTxt */
+'use strict';
+
 import { addTodoToStorage } from './todo-storage.js';
 import { loadTodos } from './todo-load.js';
-import { todoList } from './todo.js'; // Import todoList for loadTodos
+import { todoList } from './todo.js';
 
-$(document).ready(function () { // Wrap in document ready
+$(document).ready(function () {
 
   const importButton = $('#importButton');
   const importTextarea = $('#importTextarea');
@@ -49,4 +52,4 @@ $(document).ready(function () { // Wrap in document ready
     }
     importTextarea.css('display', 'none'); // Hide textarea
   }
-}); // Close document ready
+});

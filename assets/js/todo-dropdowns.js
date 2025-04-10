@@ -1,4 +1,4 @@
-// assets/js/todo-dropdowns.js
+'use strict';
 
 export function updateDropdowns(items, projectSelect, contextSelect) {
   let allProjects = new Set();

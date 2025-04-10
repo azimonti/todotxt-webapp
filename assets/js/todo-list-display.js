@@ -1,6 +1,9 @@
-// assets/js/todo-list-display.js
+/* global jsTodoTxt */
+'use strict';
 
 import { applyItemStyles, createTodoSpan } from './todo-ui.js';
+import { toggleTodoCompletion, startEditTodo, deleteTodoItem } from './todo.js';
+import { getTodosFromStorage } from './todo-storage.js';
 
 // Main function to add a todo item to the list UI
 export function addTodoToList(sortedItemData, item, todoList) {
