@@ -7,6 +7,39 @@ import { removeTodoFromStorage, updateTodoInStorage } from './todo-storage.js';
 import { applyItemStyles } from './todo-ui.js';
 import './todo-import.js';
 
+// Helper function to format date from YYYY-MM-DD or Date object to MM/DD/YYYY for datepicker
+function formatDateForPicker(dateInput) {
+  if (!dateInput) return '';
+
+  let date;
+  if (dateInput instanceof Date) {
+    date = dateInput;
+  } else if (typeof dateInput === 'string') {
+    // Try parsing YYYY-MM-DD
+    const parts = dateInput.split('-');
+    if (parts.length === 3) {
+      // Note: JS Date constructor month is 0-indexed
+      date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      // Check if the date is valid after parsing
+      if (isNaN(date.getTime())) return '';
+    } else {
+      return ''; // Invalid string format
+    }
+  } else {
+    return ''; // Invalid input type
+  }
+
+  let month = '' + (date.getMonth() + 1);
+  let day = '' + date.getDate();
+  const year = date.getFullYear();
+
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+
+  return [month, day, year].join('/');
+}
+
+
 const todoInput = $('#todoInput');
 const addButton = $('#addButton');
 const todoList = $('#todo-list');
@@ -51,6 +84,18 @@ function startEditTodo(listItem) {
   // Find and select existing project/context, or set to empty string if not found
   projectSelect.val(item.projects()[0] || '');
   contextSelect.val(item.contexts()[0] || '');
+
+  // Populate date pickers
+  const creationDate = item.created(); // Returns Date object or null
+  let dueDateString = null;
+  const extensions = item.extensions(); // Get all extensions
+  const dueExtension = extensions.find(ext => ext.key === 'due'); // Find the 'due' extension
+  if (dueExtension) {
+    dueDateString = dueExtension.value; // Assign the value if found
+  }
+
+  $('#createdDate').val(formatDateForPicker(creationDate));
+  $('#dueDate').val(formatDateForPicker(dueDateString));
 
   listItem.remove(); // Remove from the UI
 }

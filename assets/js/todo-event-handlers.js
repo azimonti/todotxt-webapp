@@ -6,6 +6,22 @@ import { loadTodos } from './todo-load.js';
 import { addTodoToList } from './todo-ui.js';
 import { toggleTodoCompletion, startEditTodo, deleteTodoItem } from './todo.js';
 
+// Helper function to format date from MM/DD/YYYY to YYYY-MM-DD
+function formatDateForTodoTxt(dateString) {
+  if (!dateString) return null;
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+    // Assuming MM/DD/YYYY
+    const [month, day, year] = parts;
+    // Ensure two digits for month and day (though datepicker usually handles this)
+    const formattedMonth = month.padStart(2, '0');
+    const formattedDay = day.padStart(2, '0');
+    return `${year}-${formattedMonth}-${formattedDay}`;
+  }
+  return null; // Invalid format
+}
+
+
 $(document).ready(function () {
   addButton.click(function () {
     const editingId = addButton.data('editingId'); // Get the ID being edited, if any
@@ -18,34 +34,58 @@ $(document).ready(function () {
         // 1. Delete the old item
         removeTodoFromStorage(editingId);
 
-        // 2. Construct the new item text (similar to adding a new todo)
-        let newTodoText = newTextFromInput;
-        const priority = prioritySelect.val(); // Check if priority dropdown was used during edit
-        const project = projectSelect.val();   // Check project dropdown
-        const context = contextSelect.val();   // Check context dropdown
+        // 2. Parse the input and update the item object based on UI controls
+        const item = new jsTodoTxt.Item(newTextFromInput); // Parse the core text
 
-        // Prepend priority if selected or if present in the input text itself
-        const inputPriorityMatch = newTodoText.match(/^\( *([A-Z]) *\) /);
+        // Get values from UI controls
+        const priority = prioritySelect.val();
+        const project = projectSelect.val();
+        const context = contextSelect.val();
+        const createdDateVal = $('#createdDate').val();
+        const dueDateVal = $('#dueDate').val();
+
+        // Update Priority
         if (priority) {
-          newTodoText = `(${priority}) ${newTodoText.replace(/^\( *[A-Z] *\) /, '')}`; // Replace existing if dropdown used
-        } else if (inputPriorityMatch) {
-          // Keep priority parsed from input if dropdown wasn't used
-          // No change needed to newTodoText
+          item.setPriority(priority);
+        } else {
+          // If dropdown is cleared, remove priority ONLY if it wasn't part of the original text input
+          // (We rely on the initial parsing of newTextFromInput for priorities typed directly)
+          // A simpler approach for now: if dropdown is empty, clear priority.
+          // This might remove a priority typed in the text if the dropdown is then cleared.
+          item.clearPriority();
         }
 
-        // Append project/context if selected via dropdowns (avoid duplicates if already in text)
-        const tempItemForMeta = new jsTodoTxt.Item(newTodoText); // Parse to check existing meta
-        if (project && !tempItemForMeta.projects().includes(project)) {
-          newTodoText = `${newTodoText} +${project}`;
+        // Update Project (Add if selected in dropdown and not already present)
+        if (project && !item.projects().includes(project)) {
+          item.addProject(project);
+          // Note: This doesn't handle removing projects via the dropdown.
         }
-        if (context && !tempItemForMeta.contexts().includes(context)) {
-          newTodoText = `${newTodoText} @${context}`;
-        }
-        // --- Creation date is NOT added or modified during edit ---
-        // It will only be present if included in newTodoText from the input field.
 
-        // 3. Add the final constructed text string to storage
-        addTodoToStorage(newTodoText); // Pass the raw string
+        // Update Context (Add if selected in dropdown and not already present)
+        if (context && !item.contexts().includes(context)) {
+          item.addContext(context);
+          // Note: This doesn't handle removing contexts via the dropdown.
+        }
+
+        // Update Creation Date
+        const formattedCreatedDate = formatDateForTodoTxt(createdDateVal);
+        if (formattedCreatedDate) {
+          item.setCreated(formattedCreatedDate);
+        } else {
+          item.clearCreated(); // Clear if date picker is empty
+        }
+
+        // Update Due Date
+        const formattedDueDate = formatDateForTodoTxt(dueDateVal);
+        if (formattedDueDate) {
+          item.setExtension('due', formattedDueDate);
+        } else {
+          item.removeExtension('due'); // Remove 'due' extension if date picker is empty
+        }
+
+        // 3. Get the final string and add to storage
+        const finalTodoText = item.toString();
+        addTodoToStorage(finalTodoText); // Pass the final string
 
         // 4. Reset UI
         addButton.text('Add Todo').removeData('editingId'); // Remove the editing ID
@@ -53,6 +93,8 @@ $(document).ready(function () {
         prioritySelect.val(''); // Reset dropdowns after edit
         projectSelect.val('');
         contextSelect.val('');
+        $('#createdDate').val(''); // Reset date pickers
+        $('#dueDate').val('');     // Reset date pickers
 
         // Reload the list to show the change and ensure correct sorting/filtering
         loadTodos(todoList);
@@ -68,31 +110,52 @@ $(document).ready(function () {
       const priority = prioritySelect.val();
       const project = projectSelect.val();
       const context = contextSelect.val();
+      const createdDateVal = $('#createdDate').val(); // Get creation date
+      const dueDateVal = $('#dueDate').val();         // Get due date
 
       if (todoBodyText !== '') {
-        let todoText = todoBodyText;
+        let todoText = ''; // Start building the text
 
-        // Prepend priority if selected
+        // 1. Prepend priority if selected
         if (priority) {
-          todoText = `(${priority}) ${todoText}`;
+          todoText = `(${priority}) `;
         }
-        // Append project if selected
+
+        // 2. Prepend creation date if provided
+        const formattedCreatedDate = formatDateForTodoTxt(createdDateVal);
+        if (formattedCreatedDate) {
+          todoText += `${formattedCreatedDate} `;
+        }
+
+        // 3. Add the main body text
+        todoText += todoBodyText;
+
+        // 4. Append project if selected
         if (project) {
-          todoText = `${todoText} +${project}`;
+          todoText += ` +${project}`;
         }
-        // Append context if selected
+        // 5. Append context if selected
         if (context) {
-          todoText = `${todoText} @${context}`;
+          todoText += ` @${context}`;
         }
+
+        // 6. Append due date if provided
+        const formattedDueDate = formatDateForTodoTxt(dueDateVal);
+        if (formattedDueDate) {
+          todoText += ` due:${formattedDueDate}`;
+        }
+
 
         // Pass the raw todoText string directly to storage
-        addTodoToStorage(todoText);
+        addTodoToStorage(todoText.trim()); // Trim any potential trailing space
 
         // Reset input fields
         todoInput.val('');
         prioritySelect.val('');
         projectSelect.val('');
         contextSelect.val('');
+        $('#createdDate').val(''); // Reset date pickers
+        $('#dueDate').val('');     // Reset date pickers
 
         // Reload the list to show the new item and ensure correct sorting/filtering
         loadTodos(todoList);
