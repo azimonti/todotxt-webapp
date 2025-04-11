@@ -1,6 +1,6 @@
 # Todo.txt Webapp
 
-A simple web application for managing your todo.txt file.
+A Progressive Web Application (PWA) for managing todo.txt tasks list.
 
 This webapp allows to manage tasks using the [todo.txt format](https://github.com/todotxt/todo.txt). It provides a simple web interface to view, add, and manage todo items.
 

@@ -55,16 +55,16 @@ $(document).ready(function () {
           item.clearPriority();
         }
 
-        // Update Project (Add if selected in dropdown and not already present)
-        if (project && !item.projects().includes(project)) {
+        // Update Project: Add project from dropdown if one is selected.
+        // The jsTodoTxt library handles ensuring it's not duplicated if already present.
+        if (project) {
           item.addProject(project);
-          // Note: This doesn't handle removing projects via the dropdown.
         }
 
-        // Update Context (Add if selected in dropdown and not already present)
-        if (context && !item.contexts().includes(context)) {
+        // Update Context: Add context from dropdown if one is selected.
+        // The jsTodoTxt library handles ensuring it's not duplicated if already present.
+        if (context) {
           item.addContext(context);
-          // Note: This doesn't handle removing contexts via the dropdown.
         }
 
         // Update Creation Date
@@ -95,6 +95,10 @@ $(document).ready(function () {
         contextSelect.val('');
         $('#createdDate').val(''); // Reset date pickers
         $('#dueDate').val('');     // Reset date pickers
+        // Reset dropdown button text
+        $('#priorityDropdownButton').text('Priority');
+        $('#projectDropdownButton').text('Project');
+        $('#contextDropdownButton').text('Context');
 
         // Reload the list to show the change and ensure correct sorting/filtering
         loadTodos(todoList);
@@ -156,6 +160,10 @@ $(document).ready(function () {
         contextSelect.val('');
         $('#createdDate').val(''); // Reset date pickers
         $('#dueDate').val('');     // Reset date pickers
+        // Reset dropdown button text
+        $('#priorityDropdownButton').text('Priority');
+        $('#projectDropdownButton').text('Project');
+        $('#contextDropdownButton').text('Context');
 
         // Reload the list to show the new item and ensure correct sorting/filtering
         loadTodos(todoList);

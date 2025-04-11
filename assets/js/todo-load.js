@@ -2,7 +2,7 @@
 'use strict';
 
 import { getTodosFromStorage } from './todo-storage.js';
-import { projectSelect, contextSelect, toggleTodoCompletion, startEditTodo, deleteTodoItem  } from './todo.js';
+import { toggleTodoCompletion, startEditTodo, deleteTodoItem  } from './todo.js';
 import { addTodoToList } from './todo-ui.js';
 import { updateDropdowns } from './todo-dropdowns.js';
 
@@ -44,5 +44,5 @@ export function loadTodos(todoList) {
 
   // Update dropdowns with projects/contexts from loaded items
   // Pass only the parsed items to updateDropdowns
-  updateDropdowns(itemsForSorting.map(i => i.item), projectSelect, contextSelect);
+  updateDropdowns(itemsForSorting.map(i => i.item));
 }

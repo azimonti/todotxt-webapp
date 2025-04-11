@@ -4,8 +4,8 @@
     "description": "A simple web application for managing your todo.txt file.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#007bff",
+    "background_color": "#F8F8F2",
+    "theme_color": "#0083B3",
     "icons": [
         {
             "src": "/img/icons/todotxt-180x180.png",

@@ -2,13 +2,36 @@ body {
   font-family: Arial, sans-serif;
   margin: 20px;
 }
-
-#todo-list {
+.todo-list {
   background-color: #2C2C2C;
 }
 
 .container {
   margin-top: 20px;
+}
+
+.form-control-font{
+  font-size: 1.1rem;
+}
+
+.btn-rounded {
+  border-radius: 30px;
+}
+
+@media (width >= 769px) {
+  .btn-rounded-left {
+    border-radius: 30px 0 0 30px;
+  }
+
+  .btn-rounded-right {
+    border-radius: 0 30px 30px 0;
+  }
+}
+
+@media (width <= 768px) {
+  .btn-rounded-mobile {
+    border-radius: 30px;
+  }
 }
 
 .list-group-item {
@@ -21,13 +44,11 @@ body {
 }
 
 .list-group-item:first-child {
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
+  border-radius: 0.25rem 0.25rem 0 0;
 }
 
 .list-group-item:last-child {
-  border-bottom-right-radius: 0.25rem;
-  border-bottom-left-radius: 0.25rem;
+  border-radius: 0 0 0.25rem 0.25rem;
 }
 
 .btn-group {
@@ -45,22 +66,46 @@ body {
 
 /* Styles for completed tasks */
 .task-done {
-  background-color: #e9ecef; /* Light gray background for done items */
+  background-color: #E9ECEF; /* Light gray background for done items */
 }
 
-select.form-select {
-  background-color: #343a40;
-  color: #fff;
-  border: 1px solid #495057;
+.datepicker-left {
+  left: 25% !important;
+  transform: translateX(-50%) !important;
 }
 
-select.form-select:focus {
-  border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+@media (width <= 768px) {
+  .datepicker-left {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
 }
 
-.task-done span {
-  color: #7E8E91; /* Gray text color */
-  text-decoration: line-through; /* Strikethrough text */
+.datepicker-right {
+  left: 70% !important;
+  transform: translateX(-50%) !important;
+}
+
+@media (width <= 768px) {
+  .datepicker-right {
+    left: 50% !important;
+  transform: translateX(-50%) !important;
+  }
+}
+
+.btn-primary {
+  --bs-btn-color:#fff;
+  --bs-btn-bg:#0083B3;
+  --bs-btn-border-color:#0083B3;
+  --bs-btn-hover-color:#fff;
+  --bs-btn-hover-bg:#006f98;
+  --bs-btn-hover-border-color:#00698f;
+  --bs-btn-focus-shadow-rgb:38,150,190;
+  --bs-btn-active-color:#fff;
+  --bs-btn-active-bg:#00698f;
+  --bs-btn-active-border-color:#006286;
+  --bs-btn-active-shadow:inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color:#fff;
+  --bs-btn-disabled-bg:#0083B3;
+  --bs-btn-disabled-border-color:#0083B3
 }

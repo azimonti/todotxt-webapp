@@ -6,6 +6,7 @@ import './todo-event-handlers.js';
 import { removeTodoFromStorage, updateTodoInStorage } from './todo-storage.js';
 import { applyItemStyles } from './todo-ui.js';
 import './todo-import.js';
+import { setupDropdownHandlers } from './todo-dropdowns.js';
 
 // Helper function to format date from YYYY-MM-DD or Date object to MM/DD/YYYY for datepicker
 function formatDateForPicker(dateInput) {
@@ -83,7 +84,13 @@ function startEditTodo(listItem) {
   prioritySelect.val(item.priority() || ''); // Select existing priority
   // Find and select existing project/context, or set to empty string if not found
   projectSelect.val(item.projects()[0] || '');
-  contextSelect.val(item.contexts()[0] || '');
+  const project = item.projects()[0] || '';
+  const context = item.contexts()[0] || '';
+
+  $('#projectDropdownButton').text(project ? `+${project}` : 'Project');
+  $('#projectSelect').val(project);
+  $('#contextDropdownButton').text(context ? `@${context}` : 'Context');
+  $('#contextSelect').val(context);
 
   // Populate date pickers
   const creationDate = item.created(); // Returns Date object or null
@@ -108,5 +115,6 @@ function deleteTodoItem(listItem) {
 
 $(document).ready(function () {
 
+  setupDropdownHandlers();
   loadTodos(todoList);
 });

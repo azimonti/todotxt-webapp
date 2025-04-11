@@ -1,7 +1,7 @@
 const CACHE_NAME = 'todotxt-cache-v1-0-0';
 const CACHE_AT_ONCE = false;
 const assetsToCache = [
-  '/',
+  '/index.html',
   '/data/json/manifest.json',
   '/data/json/version.json',
   '/assets/css/lib/bootstrap-5.3.2.min.css',
@@ -59,6 +59,7 @@ function cacheAssets() {
             console.error(`Failed to cache ${result.reason?.asset || result.value?.asset}: ${result.reason || result.value?.error}`);
           }
         });
+        return results;
       });
     }
   });
@@ -66,6 +67,7 @@ function cacheAssets() {
 
 // Install event - cache assets
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(cacheAssets());
 });
 
@@ -77,23 +79,39 @@ self.addEventListener('activate', event => {
         cacheNames
           .filter(name => name !== CACHE_NAME)
           .map(name => caches.delete(name))
-      ).then(() => cacheAssets());
-    })
+      );
+    }).then(() => self.clients.claim())
+      .then(() => cacheAssets())
   );
 });
 
 // Fetch event - serve cached content or fall back to network
 self.addEventListener('fetch', event => {
+  const req = event.request;
+
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      caches.match('/index.html').then(res => {
+        if (res) {
+          return res;
+        } else {
+          return fetch(req);
+        }
+      }).catch(err => {
+        console.error('SW: Fetch error', err);
+        return new Response('Offline - index.html not available', { status: 503 });
+      })
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+    caches.match(req).then(res => {
+      if (res) {
+        return res;
+      } else {
+        return fetch(req);
+      }
     })
   );
-});
-
-// Refresh cache event - handle cache refresh from the main thread
-self.addEventListener('message', event => {
-  if (event.data === 'refresh_cache') {
-    event.waitUntil(cacheAssets());
-  }
 });
