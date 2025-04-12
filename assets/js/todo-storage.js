@@ -1,7 +1,12 @@
 'use strict';
 
-// Helper to generate unique IDs
-function generateUniqueId() {
+import { uploadTodosToDropbox } from './dropbox-sync.js'; // Import the upload function
+
+const LOCAL_STORAGE_KEY = 'todos';
+const LOCAL_TIMESTAMP_KEY = 'todosLastModifiedLocal';
+
+// Helper to generate unique IDs - Exporting for use elsewhere
+export function generateUniqueId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
@@ -41,7 +46,17 @@ export function saveTodosToStorage(todoObjects) {
     console.error("Attempted to save non-array to localStorage:", todoObjects);
     return;
   }
-  localStorage.setItem('todos', JSON.stringify(todoObjects));
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todoObjects));
+  // Store the current timestamp whenever todos are saved
+  localStorage.setItem(LOCAL_TIMESTAMP_KEY, new Date().toISOString());
+}
+
+/**
+ * Retrieves the timestamp of the last local save operation.
+ * @returns {string | null} ISO 8601 timestamp string or null if not set.
+ */
+export function getLocalLastModified() {
+  return localStorage.getItem(LOCAL_TIMESTAMP_KEY);
 }
 
 export function addTodoToStorage(item) {
@@ -52,6 +67,7 @@ export function addTodoToStorage(item) {
   };
   todos.push(newTodoObject);
   saveTodosToStorage(todos);
+  uploadTodosToDropbox().catch(err => console.error("Upload after add failed:", err)); // Trigger upload
 }
 
 export function updateTodoInStorage(idToUpdate, newItem) {
@@ -60,6 +76,7 @@ export function updateTodoInStorage(idToUpdate, newItem) {
   if (index > -1) {
     todos[index].text = newItem.toString();
     saveTodosToStorage(todos);
+    uploadTodosToDropbox().catch(err => console.error("Upload after update failed:", err)); // Trigger upload
   } else {
     console.warn("Could not find todo to update using ID:", idToUpdate);
   }
@@ -71,6 +88,7 @@ export function removeTodoFromStorage(idToDelete) {
   todos = todos.filter(todo => todo.id !== idToDelete);
   if (todos.length < initialLength) {
     saveTodosToStorage(todos);
+    uploadTodosToDropbox().catch(err => console.error("Upload after delete failed:", err)); // Trigger upload
   } else {
     console.warn("Could not find todo to delete using ID:", idToDelete);
   }

@@ -21,20 +21,22 @@
   <div class="container">
     <br>
     <h1 style="visibility: hidden; position: absolute; height: 0; overflow: hidden;">Todo.txt Webapp</h1>
-    <h2 class="text-centered">Tasks List</h2><!-- Add Todo Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Tasks List</h2><!-- Reverted to button, styled as icon button -->
+       <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 me-2 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
+    </div>
     <div class="add-todo-section mb-3">
       <div class="input-group mb-2">
-        <!-- Bootstrap Dropdowns -->
         <div class="col-md-4 col-12">
           <div class="dropdown ms-2 dropdown-center">
-            <button class="btn btn-primary btn-rounded-mobile btn-rounded-left dropdown-toggle w-100" type="button" id="priorityDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Priority</button> <input type="hidden" id="prioritySelect" value=""> <!-- Hidden input for priority -->
+            <button class="btn btn-primary btn-rounded-mobile btn-rounded-left dropdown-toggle w-100" type="button" id="priorityDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Priority</button> <input type="hidden" id="prioritySelect" value="">
             <ul class="dropdown-menu" id="priorityDropdownMenu" aria-labelledby="priorityDropdownButton">
               <li>
                 <a class="dropdown-item" href="#" data-value="">Priority</a>
-              </li><!-- Clear Option -->
+              </li>
               <li>
                 <hr class="dropdown-divider">
-              </li><!-- Separator -->
+              </li>
               <li>
                 <a class="dropdown-item" href="#" data-value="A">(A)</a>
               </li>
@@ -74,42 +76,65 @@
         </div>
       </div>
       <div class="mb-2">
-        <!-- Group for dates -->
-        <div class="row">
-          <div class="col-md-6">
+        <div class="row gx-0 gx-md-2">
+          <div class="col-12 col-md-6 mb-2 mb-md-0">
             <div class="datepicker-container">
               <div class="form-group">
-                <label for="createdDate">Created:</label> <input type="text" class="form-control date-picker" id="createdDate" data-datepicker-color="primary">
+                <label for="createdDate">Created:</label> <input type="text" class="form-control date-picker form-control-date-left" id="createdDate" data-datepicker-color="primary">
               </div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-12 col-md-6">
             <div class="datepicker-container">
               <div class="form-group">
-                <label for="dueDate">Due:</label> <input type="text" class="form-control date-picker" id="dueDate" data-datepicker-color="primary">
+                <label for="dueDate">Due:</label> <input type="text" class="form-control date-picker form-control-date-right" id="dueDate" data-datepicker-color="primary">
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="row g-2 mb-2">
+      <div class="row g-2 mb-2 align-items-md-stretch">
         <div class="col-12 col-md">
-          <!-- Added py-2, ensure form-control-font doesn't conflict -->
-          <input type="text" class="form-control form-control-font py-3" placeholder="Enter todo item" id="todoInput">
+          <input type="text" class="form-control form-control-todo py-3 h-100" placeholder="Enter todo item" id="todoInput">
         </div>
         <div class="col-12 col-md-auto">
-          <!-- Added py-2, ensure btn-rounded doesn't conflict -->
-          <button class="btn btn-primary btn-rounded-mobile w-100 py-3" type="button" id="addButton">Add Todo</button>
+          <button class="btn btn-primary btn-rounded-mobile btn-rounded-right-desktop w-100 w-md-auto py-3 h-100" type="button" id="addButton">Add Todo</button>
         </div>
       </div>
-      <div class="btn-group mt-2">
-        <!-- Group for Filter, Copy, and Import buttons on same line -->
-        <button class="btn btn-primary btn-rounded" type="button" id="filterButton">Filter</button> <button class="btn btn-primary btn-rounded ms-2" type="button" id="copyAllButton">Copy All</button> <button class="btn btn-primary btn-rounded ms-2" type="button" id="importButton">Import</button>
+      <div class="row mt-2 gx-0 gx-md-2">
+        <div class="col">
+          <button class="btn btn-primary w-100 btn-rounded-left px-0 px-md-3" type="button" id="filterButton">Filter</button>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary w-100 px-0 px-md-3" type="button" id="copyAllButton">Copy</button>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary w-100 px-0 px-md-3 btn-rounded-right" type="button" id="importButton">Import</button>
+        </div>
       </div>
       <textarea class="form-control mt-2" id="importTextarea" rows="5" style="display:none;" placeholder="Paste todo items here, one per line"></textarea>
-    </div><!-- End Add Todo Section -->
-    <ul class="list-group jsTodoTxt" id="todo-list"></ul><!-- Removed Copy All button from here -->
+    </div>
+    <ul class="list-group jsTodoTxt todo-list" id="todo-list"></ul>
+  </div><!-- Conflict Resolution Modal -->
+  <div class="modal fade" id="conflictModal" tabindex="-1" aria-labelledby="conflictModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="conflictModalLabel">Sync Conflict Detected</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>The version of your todo list on Dropbox is newer than your local version.</p>
+          <p>Which version would you like to keep?</p>
+          <p><strong>Local Last Saved:</strong> <span id="localConflictTime"></span><br>
+          <strong>Dropbox Last Saved:</strong> <span id="dropboxConflictTime"></span></p><!-- Optional: Add text areas here later to show previews -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary btn-rounded" id="keepLocalButton">Keep Local (Overwrite Dropbox)</button> <button type="button" class="btn btn-complementary btn-rounded" id="keepDropboxButton">Keep Dropbox (Overwrite Local)</button>
+        </div>
+      </div>
+    </div>
   </div>
+  <script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
   <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
   <script src="/assets/js/lib/jquery-3.7.1.slim.min.js"></script>
   <script src="/assets/js/lib/bootstrap-5.3.2.min.js"></script>

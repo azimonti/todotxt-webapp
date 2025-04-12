@@ -1,7 +1,8 @@
 /* global jsTodoTxt */
 'use strict';
 
-import { getTodosFromStorage } from './todo-storage.js';
+// Import generateUniqueId if needed, or import saveTodosToStorage which uses it
+import { getTodosFromStorage, saveTodosToStorage } from './todo-storage.js';
 import { toggleTodoCompletion, startEditTodo, deleteTodoItem  } from './todo.js';
 import { addTodoToList } from './todo-ui.js';
 import { updateDropdowns } from './todo-dropdowns.js';
@@ -45,4 +46,39 @@ export function loadTodos(todoList) {
   // Update dropdowns with projects/contexts from loaded items
   // Pass only the parsed items to updateDropdowns
   updateDropdowns(itemsForSorting.map(i => i.item));
+}
+
+/**
+ * Parses raw text content (one todo per line) and saves it to local storage,
+ * overwriting existing content. Generates new IDs for each item.
+ * @param {string} textContent - The raw text content from the todo file.
+ */
+export function saveTodosFromText(textContent) {
+  if (typeof textContent !== 'string') {
+    console.error('saveTodosFromText requires a string input.');
+    return;
+  }
+
+  const lines = textContent.split('\n');
+  const newTodoObjects = lines
+    .map(line => line.trim()) // Trim whitespace
+    .filter(line => line.length > 0) // Filter out empty lines
+    .map(line => ({
+      // We need a way to generate IDs here. Let's assume generateUniqueId is accessible
+      // or re-import saveTodosToStorage which handles ID generation implicitly if needed.
+      // For simplicity, let's structure it assuming saveTodosToStorage handles it,
+      // but the current saveTodosToStorage expects objects with IDs already.
+      // Let's refine: We need generateUniqueId here.
+      // Re-importing from todo-storage might cause circular dependency issues.
+      // Best approach: todo-storage should export generateUniqueId or saveTodos should handle text array.
+      // Let's modify todo-storage slightly later if needed. For now, assume we can generate IDs.
+      // TEMPORARY ID generation - will refine if needed by modifying todo-storage
+      id: Date.now().toString(36) + Math.random().toString(36).substring(2) + lines.indexOf(line), // Simple unique ID
+      text: line
+    }));
+
+  console.log(`Parsed ${newTodoObjects.length} todos from downloaded text.`);
+  saveTodosToStorage(newTodoObjects); // Overwrite local storage
+  console.log('Saved downloaded todos to local storage.');
+  // The UI reload should happen in the calling function (syncWithDropbox)
 }
