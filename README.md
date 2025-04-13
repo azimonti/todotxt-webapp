@@ -7,7 +7,7 @@ This webapp allows to manage tasks using the [todo.txt format](https://github.co
 This project utilizes the [jsTodoTxt](https://github.com/jmhobbs/jsTodoTxt) library by jmhobbs for parsing and manipulating todo.txt format. We appreciate the work of jmhobbs and the contributors to jsTodoTxt.
 
 
-![Todo.txt Webapp](screenshots/app_desktop.png)
+![Todo.txt Webapp](screenshots/app_desktop_2.png)
 
 ## Usage
 
