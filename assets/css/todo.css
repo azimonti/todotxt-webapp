@@ -166,7 +166,26 @@ body {
   --bs-btn-disabled-border-color:#0083B3
 }
 
-.btn-offcanvas {
+.btn-complementary {
+  font-weight: 800;
+  --bs-btn-color: #FFF;
+  --bs-btn-padding-y: 1rem;
+  --bs-btn-bg: #FF4030;
+  --bs-btn-border-color: #FF4030;
+  --bs-btn-hover-color: #FFF;
+  --bs-btn-hover-bg: #D93628;
+  --bs-btn-hover-border-color: #CC3326;
+  --bs-btn-focus-shadow-rgb: 255,64,48;
+  --bs-btn-active-color: #FFF;
+  --bs-btn-active-bg: #CC3326;
+  --bs-btn-active-border-color: #BF3024;
+  --bs-btn-active-shadow: inset 0 3px 5px rgb(0 0 0 / 12.5%);
+  --bs-btn-disabled-color: #FFF;
+  --bs-btn-disabled-bg: #FF4030;
+  --bs-btn-disabled-border-color: #FF4030;
+}
+
+.btn-offcanvas{
   --bs-btn-color: #0083B3;
   --bs-btn-hover-color: #006F98;
 }
@@ -214,4 +233,19 @@ body {
 .dropbox-auth-button.btn-outline-danger svg { /* Target the SVG element */
   color: #DC3545; /* Red icon color */
   fill: currentcolor; /* Make sure SVG fill uses the color property */
+}
+
+/* File list specific styles */
+#fileListSidebar .nav-link {
+  cursor: pointer;
+  padding: 0.5rem 1rem; /* Adjust padding */
+}
+
+#fileListSidebar .nav-link.active {
+  background-color: #e9ecef; /* Highlight active file */
+  color: #000;
+}
+
+#fileListSidebar .nav-link:hover {
+  background-color: #f8f9fa; /* Hover effect */
 }
