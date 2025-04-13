@@ -26,8 +26,10 @@ const todoList = $('#todo-list');
 const prioritySelect = $('#prioritySelect');
 const projectSelect = $('#projectSelect');
 const contextSelect = $('#contextSelect');
-const fileSelectionDropdown = $('#fileSelectionDropdown');
-const fileSelectionMenu = $('#fileSelectionMenu');
+// const fileSelectionDropdown = $('#fileSelectionDropdown'); // No longer needed
+// const fileSelectionMenu = $('#fileSelectionMenu'); // No longer needed
+const fileListSidebar = $('#fileListSidebar'); // New sidebar list element
+const currentFileNameHeader = $('#currentFileNameHeader'); // New header element
 const addFileForm = $('#addFileForm');
 const newFileNameInput = $('#newFileNameInput');
 const renameFileForm = $('#renameFileForm');
@@ -309,11 +311,11 @@ export function updateFileSelectionUI() {
   const activeFilePath = getActiveFile();
   let activeFileName = 'todo.txt'; // Default
 
-  fileSelectionMenu.empty(); // Clear existing options
+  fileListSidebar.empty(); // Clear existing sidebar items
 
   knownFiles.forEach(file => {
-    const listItem = $('<li></li>');
-    const link = $('<a class="dropdown-item" href="#"></a>')
+    const listItem = $('<li class="nav-item"></li>'); // Use nav-item class
+    const link = $('<a class="nav-link" href="#"></a>') // Use nav-link class
       .text(file.name)
       .data('path', file.path) // Store path in data attribute
       .click(function(e) {
@@ -334,16 +336,16 @@ export function updateFileSelectionUI() {
     // Highlight the active file
     if (file.path === activeFilePath) {
       link.addClass('active'); // Add Bootstrap 'active' class
-      activeFileName = file.name; // Update the name for the button
+      activeFileName = file.name; // Update the name for the header
     }
 
     listItem.append(link);
-    fileSelectionMenu.append(listItem);
+    fileListSidebar.append(listItem); // Append to the sidebar list
   });
 
-  // Update the main dropdown button text
-  fileSelectionDropdown.text(activeFileName);
-  logVerbose(`Active file button text set to: ${activeFileName}`);
+  // Update the main header text
+  currentFileNameHeader.text(activeFileName);
+  logVerbose(`Active file header text set to: ${activeFileName}`);
 }
 
 // --- Add listener for the modal's confirmation button ---

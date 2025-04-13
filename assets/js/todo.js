@@ -1,4 +1,6 @@
 /* global jsTodoTxt */
+/* Cline NOTE: This file (todo.js) should primarily contain imports and top-level initialization. */
+/* Avoid adding complex function definitions directly here. Use separate modules and import them. */
 'use strict';
 
 import { loadTodos } from './todo-load.js';
@@ -26,7 +28,7 @@ import {
     updateFileSelectionUI,
     setupDeleteFileConfirmListener // Import the new listener setup
 } from './todo-files.js'; // Updated import path
-// Removed incorrect import: import { showNotification } from './notif-flash.min.js';
+import './todo-offcanvas.js'; // Import the offcanvas logic
 
 
 // DOM Elements remain accessible globally via $

@@ -22,4 +22,4 @@
   - [ ] (C) 2025-04-13 Update UI indicators (sync status, last sync time) to reflect the active file. @ui @sync
   - [x] 2025-04-13 (B) 2025-04-13 Modify initial load logic to load the last active file or a default file. @localstorage @load
   - [ ] (C) 2025-04-12 Refactor storage logic for clarity (local vs. Dropbox) @refactor @localstorage
-  - [ ] (A) 2025-04-13 Replace file dropdown with a sidebar for file management @ui @refactor
+  - [x] 2025-04-13 (A) 2025-04-13 Replace file sidebar with an offcanvas for file management @ui @refactor

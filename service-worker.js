@@ -35,6 +35,7 @@ const assetsToCache = [
   '/assets/js/todo-list-display.js',
   '/assets/js/todo-load.js',
   '/assets/js/todo-logging.js',
+  '/assets/js/todo-offcanvas.js',
   '/assets/js/todo-storage.js',
   '/assets/js/todo-ui.js',
   '/assets/js/todo.js',
