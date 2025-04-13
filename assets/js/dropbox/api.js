@@ -330,6 +330,47 @@ export async function renameDropboxFile(oldPath, newPath) {
 }
 
 /**
+ * Deletes a file on Dropbox.
+ * @param {string} filePath - The full path of the file to delete on Dropbox.
+ * @returns {Promise<boolean>} A promise that resolves with true if successful, false otherwise.
+ */
+export async function deleteDropboxFile(filePath) {
+  if (!dbx) {
+    warnVerbose('Dropbox API not initialized. Cannot delete file.');
+    return false;
+  }
+  if (!filePath) {
+    console.error('deleteDropboxFile called without filePath.');
+    return false;
+  }
+  // Optional: Add check to prevent deleting root or essential files if needed
+
+  logVerbose(`Attempting to delete Dropbox file: "${filePath}"...`);
+  try {
+    const response = await dbx.filesDeleteV2({ path: filePath });
+    logVerbose(`Successfully deleted file on Dropbox:`, response.result);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting file "${filePath}" on Dropbox:`, error?.error?.error_summary || error);
+     // Provide more specific feedback if possible
+    let userMessage = `Failed to delete file on Dropbox.`;
+    if (error?.error?.error_summary?.includes('path_lookup/not_found')) {
+        // If file not found, maybe treat as success for deletion? Or specific error?
+        // For now, let's treat not found as a failure to delete what was intended.
+        userMessage = `Failed to delete: The file "${filePath}" was not found on Dropbox.`;
+    }
+    // Use notification instead of alert
+    if (typeof showNotification === 'function') {
+      showNotification(userMessage, 'alert');
+    } else {
+      alert(userMessage); // Fallback if notification function isn't global
+    }
+    return false;
+  }
+}
+
+
+/**
  * Performs the core sync logic for the currently active file:
  * compares local and remote timestamps and handles conflicts.
  */

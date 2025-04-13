@@ -9,16 +9,17 @@
   - [x] 2025-04-13 (B) 2025-04-12 Implement offline queue for Dropbox uploads @sync @offline
   - [x] 2025-04-13 (B) 2025-04-12 Implement logic to overwrite local or remote file based on user choice @sync @conflict
   - [x] 2025-04-13 (C) 2025-04-12 Add UI elements/indicators for sync status @ui @sync
-  - [ ] (B) 2025-04-13 Add support for multiple files @dropbox @localstorage
-  - [ ] (A) 2025-04-13 Modify local storage to track multiple file paths/names and the currently active file. @localstorage
-  - [ ] (A) 2025-04-13 Update Dropbox API calls (`upload`, `download`, `metadata`) to accept and use specific file paths. @dropbox @api
-  - [ ] (A) 2025-04-13 Create UI element (e.g., dropdown menu) to display available files and allow switching the active file. (Icon TBD, maybe `fa-list` or `fa-file-lines` for dropdown itself) @ui
-  - [ ] (A) 2025-04-13 Create UI elements/buttons for file management (Add: `fa-plus`, Rename: `fa-pen-to-square`, Delete: `fa-times`). Consider placement (e.g., near file dropdown). @ui
-  - [ ] (B) 2025-04-13 Implement "Add New File" logic: Prompt for name, create empty file on Dropbox, update local file list, switch to new file. @dropbox @ui @localstorage
-  - [ ] (B) 2025-04-13 Implement "Rename File" logic: Prompt for new name, rename file on Dropbox, update local file list. @dropbox @ui @localstorage
-  - [ ] (B) 2025-04-13 Implement "Delete File" logic: Confirm deletion, delete file on Dropbox, remove from local list, switch to another file (e.g., default or first). @dropbox @ui @localstorage
-  - [ ] (C) 2025-04-13 Update sync logic (`dropbox-sync.js`) to operate only on the currently active file. @sync @dropbox
-  - [ ] (C) 2025-04-13 Ensure conflict detection and resolution works on a per-file basis. @sync @conflict
+  - [x] 2025-04-13 (B) 2025-04-13 Add support for multiple files @dropbox @localstorage
+  - [x] 2025-04-13 (A) 2025-04-13 Modify local storage to track multiple file paths/names and the currently active file. @localstorage
+  - [x] 2025-04-13 (A) 2025-04-13 Update Dropbox API calls (`upload`, `download`, `metadata`) to accept and use specific file paths. @dropbox @api
+  - [x] 2025-04-13 (A) 2025-04-13 Create UI element (e.g., dropdown menu) to display available files and allow switching the active file. (Icon TBD, maybe `fa-list` or `fa-file-lines` for dropdown itself) @ui
+  - [x] 2025-04-13 (A) 2025-04-13 Create UI elements/buttons for file management (Add: `fa-plus`, Rename: `fa-pen-to-square`, Delete: `fa-times`). Consider placement (e.g., near file dropdown). @ui
+  - [x] 2025-04-13 (B) 2025-04-13 Implement "Add New File" logic: Prompt for name, create empty file on Dropbox, update local file list, switch to new file. @dropbox @ui @localstorage
+  - [x] 2025-04-13 (B) 2025-04-13 Implement "Rename File" logic: Prompt for new name, rename file on Dropbox, update local file list. @dropbox @ui @localstorage
+  - [x] 2025-04-13 (B) 2025-04-13 Implement "Delete File" logic: Confirm deletion, delete file on Dropbox, remove from local list, switch to another file (e.g., default or first). @dropbox @ui @localstorage
+  - [x] 2025-04-13 (C) 2025-04-13 Update sync logic (`dropbox-sync.js`) to operate only on the currently active file. @sync @dropbox
+  - [x] 2025-04-13 (C) 2025-04-13 Ensure conflict detection and resolution works on a per-file basis. @sync @conflict
   - [ ] (C) 2025-04-13 Update UI indicators (sync status, last sync time) to reflect the active file. @ui @sync
-  - [ ] (B) 2025-04-13 Modify initial load logic to load the last active file or a default file. @localstorage @load
+  - [x] 2025-04-13 (B) 2025-04-13 Modify initial load logic to load the last active file or a default file. @localstorage @load
   - [ ] (C) 2025-04-12 Refactor storage logic for clarity (local vs. Dropbox) @refactor @localstorage
+  - [ ] (A) 2025-04-13 Replace file dropdown with a sidebar for file management @ui @refactor

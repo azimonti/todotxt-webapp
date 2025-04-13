@@ -8,48 +8,28 @@ import {
   updateTodoInStorage,
   getKnownFiles,
   getActiveFile,
-  setActiveFile
+  setActiveFile,
+  DEFAULT_FILE_PATH // Import DEFAULT_FILE_PATH for checks
 } from './todo-storage.js';
-import { applyItemStyles } from './todo-ui.js';
+// import { applyItemStyles } from './todo-ui.js'; // Moved to todo-logic.js
 import './todo-import.js';
 import { setupDropdownHandlers } from './todo-dropdowns.js';
-import { initializeDropboxSync, uploadTodosToDropbox } from './dropbox-sync.js'; // Import Dropbox sync initializer and upload function
+import { initializeDropboxSync } from './dropbox-sync.js'; // uploadTodosToDropbox is likely used within logic now
 import { logVerbose } from './todo-logging.js'; // Import logging
+import {
+    formatDateForPicker, // Keep if needed locally, or remove if only used in moved functions
+    setupAddFileModalListeners,
+    setupRenameFileModalListeners,
+    toggleTodoCompletion, // Keep export if needed by event-handlers? Check usage.
+    startEditTodo,        // Keep export if needed by event-handlers? Check usage.
+    deleteTodoItem,       // Keep export if needed by event-handlers? Check usage.
+    updateFileSelectionUI,
+    setupDeleteFileConfirmListener // Import the new listener setup
+} from './todo-files.js'; // Updated import path
+// Removed incorrect import: import { showNotification } from './notif-flash.min.js';
 
 
-// Helper function to format date from YYYY-MM-DD or Date object to MM/DD/YYYY for datepicker
-function formatDateForPicker(dateInput) {
-  if (!dateInput) return '';
-
-  let date;
-  if (dateInput instanceof Date) {
-    date = dateInput;
-  } else if (typeof dateInput === 'string') {
-    // Try parsing YYYY-MM-DD
-    const parts = dateInput.split('-');
-    if (parts.length === 3) {
-      // Note: JS Date constructor month is 0-indexed
-      date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-      // Check if the date is valid after parsing
-      if (isNaN(date.getTime())) return '';
-    } else {
-      return ''; // Invalid string format
-    }
-  } else {
-    return ''; // Invalid input type
-  }
-
-  let month = '' + (date.getMonth() + 1);
-  let day = '' + date.getDate();
-  const year = date.getFullYear();
-
-  if (month.length < 2) month = '0' + month;
-  if (day.length < 2) day = '0' + day;
-
-  return [month, day, year].join('/');
-}
-
-
+// DOM Elements remain accessible globally via $
 const todoInput = $('#todoInput');
 const addButton = $('#addButton');
 const todoList = $('#todo-list');
@@ -66,254 +46,37 @@ const deleteFileButton = $('#deleteFileButton'); // Delete file button
 // Modal instances will be created inside $(document).ready()
 const addFileForm = $('#addFileForm'); // Form inside the modal
 const newFileNameInput = $('#newFileNameInput'); // Input field in the modal
-const renameFileForm = $('#renameFileForm'); // Rename Form
-const currentFileNameToRename = $('#currentFileNameToRename'); // Span to show current name
-const newRenameFileNameInput = $('#newRenameFileNameInput'); // Input for new name
+const renameFileForm = $('#renameFileForm'); // Rename Form - Keep for listener setup
+const currentFileNameToRename = $('#currentFileNameToRename'); // Span to show current name - Keep for modal population
+const newRenameFileNameInput = $('#newRenameFileNameInput'); // Input for new name - Keep for listener setup
 
 // Module-level variables for modal instances, initialized lazily
+// These are now primarily managed within the modal opening logic below
 let addFileModalInstance = null;
 let renameFileModalInstance = null;
+// Delete modal instance is handled within its own logic
 
-export { todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem, projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, copyAllButton }; // Added missing exports
+// Export DOM elements and potentially functions needed by other modules (like event handlers)
+// Review if toggleTodoCompletion, startEditTodo, deleteTodoItem are truly needed here
+// If event-handlers.js imports them, keep them. Otherwise, remove.
+// Assuming event-handlers.js might need them:
+export { todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem, projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, copyAllButton };
 
 
-// --- Modal Listener Setup Functions (called only once per modal) ---
-
-// Setup listeners for the Add File modal
-function setupAddFileModalListeners() {
-    logVerbose('Setting up Add File modal listeners...');
-    addFileForm.off('submit.addfile').on('submit.addfile', async function(event) {
-        event.preventDefault();
-        const newFileName = newFileNameInput.val();
-
-        if (!newFileName) {
-          alert("Error: File name cannot be empty.");
-          return;
-        }
-        let cleanName = newFileName.trim();
-        if (!cleanName) {
-            alert("Error: File name cannot be empty.");
-            return;
-        }
-        if (!cleanName.toLowerCase().endsWith('.txt')) {
-            cleanName += '.txt';
-            logVerbose(`Appended .txt extension: ${cleanName}`);
-        }
-        const newFilePath = cleanName.startsWith('/') ? cleanName : `/${cleanName}`;
-        const knownFiles = getKnownFiles();
-        if (knownFiles.some(file => file.path.toLowerCase() === newFilePath.toLowerCase())) {
-            alert(`Error: File "${newFilePath}" already exists.`);
-            return;
-        }
-
-        logVerbose(`Attempting to add new file: ${newFilePath}`);
-        if (addFileModalInstance) { // Hide modal if instance exists
-            addFileModalInstance.hide();
-        }
-
-        try {
-            const { uploadTodosToDropbox: apiUpload } = await import('./dropbox/api.js');
-            const originalActiveFile = getActiveFile();
-            setActiveFile(newFilePath);
-            const { saveTodosToStorage: tempSave } = await import('./todo-storage.js');
-            tempSave([]);
-            setActiveFile(originalActiveFile);
-            await apiUpload(newFilePath);
-            logVerbose(`Empty file ${newFilePath} created on Dropbox.`);
-            const { addKnownFile } = await import('./todo-storage.js');
-            addKnownFile(cleanName, newFilePath);
-            setActiveFile(newFilePath);
-                updateFileSelectionUI();
-                loadTodos(todoList);
-                // alert(`File "${cleanName}" created successfully.`); // Removed alert
-                logVerbose(`File "${cleanName}" created successfully.`); // Keep log
-            } catch (error) {
-                console.error(`Error adding file ${newFilePath}:`, error);
-                alert(`Failed to add file "${cleanName}". Check console for details.`); // Keep error alert
-        }
-    });
-    logVerbose('Add File modal listeners attached.');
-}
-
-// Setup listeners for the Rename File modal
-function setupRenameFileModalListeners() {
-    logVerbose('Setting up Rename File modal listeners...');
-    renameFileForm.off('submit.renamefile').on('submit.renamefile', async function(event) {
-        event.preventDefault();
-        const newFileName = newRenameFileNameInput.val();
-        const oldFilePath = getActiveFile();
-
-         const { DEFAULT_FILE_PATH } = await import('./todo-storage.js');
-         if (oldFilePath === DEFAULT_FILE_PATH) {
-             alert("Error: The default todo.txt file cannot be renamed.");
-             if (renameFileModalInstance) renameFileModalInstance.hide();
-             return;
-         }
-
-        if (!newFileName) {
-          alert("Error: New file name cannot be empty.");
-          return;
-        }
-        let cleanNewName = newFileName.trim();
-        if (!cleanNewName) {
-            alert("Error: New file name cannot be empty.");
-            return;
-        }
-         if (!cleanNewName.toLowerCase().endsWith('.txt')) {
-            cleanNewName += '.txt';
-            logVerbose(`Appended .txt extension: ${cleanNewName}`);
-        }
-        const newFilePath = cleanNewName.startsWith('/') ? cleanNewName : `/${cleanNewName}`;
-        if (newFilePath.toLowerCase() === oldFilePath.toLowerCase()) {
-            logVerbose("Rename cancelled: New name is the same as the old name.");
-             if (renameFileModalInstance) renameFileModalInstance.hide();
-            return;
-        }
-        const currentKnownFiles = getKnownFiles();
-        if (currentKnownFiles.some(file => file.path.toLowerCase() === newFilePath.toLowerCase())) {
-            alert(`Error: A file named "${cleanNewName}" already exists.`);
-            return;
-        }
-
-        logVerbose(`Attempting to rename file from "${oldFilePath}" to "${newFilePath}"`);
-        if (renameFileModalInstance) renameFileModalInstance.hide(); // Hide modal
-
-        try {
-            const { renameDropboxFile: apiRename } = await import('./dropbox/api.js');
-            const renameSuccess = await apiRename(oldFilePath, newFilePath);
-
-            if (renameSuccess) {
-                const { renameKnownFile } = await import('./todo-storage.js');
-                renameKnownFile(oldFilePath, cleanNewName, newFilePath);
-                updateFileSelectionUI();
-                // alert(`File successfully renamed to "${cleanNewName}".`); // Removed alert
-                logVerbose(`File successfully renamed to "${cleanNewName}".`); // Keep log
-            } else {
-                logVerbose(`Dropbox rename failed for "${oldFilePath}" to "${newFilePath}".`);
-            }
-        } catch (error) {
-            console.error(`Error renaming file from ${oldFilePath} to ${newFilePath}:`, error);
-            alert(`Failed to rename file. Check console for details.`);
-        }
-    });
-     logVerbose('Rename File modal listeners attached.');
-}
-
-function toggleTodoCompletion(listItem) {
-  const itemId = listItem.data('id');
-  const itemText = listItem.find('span').text();
-  const item = new jsTodoTxt.Item(itemText);
-
-  item.setComplete(!item.complete()); // Toggle completion
-  if (item.complete()) {
-    item.clearPriority(); // Remove priority when completed
-    if(item.created()){
-      item.setCompleted(new Date()); // If there is a creation date set the complete date
-    }
-  }
-
-  updateTodoInStorage(itemId, item); // Update in storage
-  applyItemStyles(listItem, item); // Update styles
-  listItem.find('span').text(item.toString()); // Update the text in the span
-  listItem.find('button[title]').attr('title', item.complete() ? 'Mark as Incomplete' : 'Mark as Done'); // Update button title
-  loadTodos(todoList); // Add this line to reload the todos after completion toggle
-}
-
-function startEditTodo(listItem) {
-  const itemId = listItem.data('id');
-  const itemText = listItem.find('span').text();
-  const item = new jsTodoTxt.Item(itemText);
-
-  todoInput.val(itemText); // Populate input with current text
-  addButton.text('Save Edit').data('editingId', itemId); // Change button text and store ID
-  todoInput.focus(); // Focus the input
-
-  prioritySelect.val(item.priority() || ''); // Select existing priority
-  // Find and select existing project/context, or set to empty string if not found
-  projectSelect.val(item.projects()[0] || '');
-  const project = item.projects()[0] || '';
-  const context = item.contexts()[0] || '';
-
-  $('#projectDropdownButton').text(project ? `+${project}` : 'Project');
-  $('#projectSelect').val(project);
-  $('#contextDropdownButton').text(context ? `@${context}` : 'Context');
-  $('#contextSelect').val(context);
-
-  // Populate date pickers
-  const creationDate = item.created(); // Returns Date object or null
-  let dueDateString = null;
-  const extensions = item.extensions(); // Get all extensions
-  const dueExtension = extensions.find(ext => ext.key === 'due'); // Find the 'due' extension
-  if (dueExtension) {
-    dueDateString = dueExtension.value; // Assign the value if found
-  }
-
-  $('#createdDate').val(formatDateForPicker(creationDate));
-  $('#dueDate').val(formatDateForPicker(dueDateString));
-
-  listItem.remove(); // Remove from the UI
-}
-
-function deleteTodoItem(listItem) {
-  const itemId = listItem.data('id');
-  removeTodoFromStorage(itemId); // Remove from storage
-  listItem.remove(); // Remove from the UI
-}
-
-// --- File Selection UI ---
-function updateFileSelectionUI() {
-  logVerbose("Updating file selection UI...");
-  const knownFiles = getKnownFiles();
-  const activeFilePath = getActiveFile();
-  let activeFileName = 'todo.txt'; // Default
-
-  fileSelectionMenu.empty(); // Clear existing options
-
-  knownFiles.forEach(file => {
-    const listItem = $('<li></li>');
-    const link = $('<a class="dropdown-item" href="#"></a>')
-      .text(file.name)
-      .data('path', file.path) // Store path in data attribute
-      .click(function(e) {
-        e.preventDefault();
-        const selectedPath = $(this).data('path');
-        if (selectedPath !== getActiveFile()) {
-          logVerbose(`Switching active file to: ${selectedPath}`);
-          setActiveFile(selectedPath);
-          // Reload todos for the new active file
-          loadTodos(todoList);
-          // Update the UI again to reflect the change (button text)
-          updateFileSelectionUI();
-          // Optionally trigger sync for the new file?
-          // initializeDropboxSync(); // Or a more specific sync function if available
-        }
-      });
-
-    // Optional: Highlight the active file
-    if (file.path === activeFilePath) {
-      link.addClass('active'); // Add Bootstrap 'active' class
-      activeFileName = file.name; // Update the name for the button
-    }
-
-    listItem.append(link);
-    fileSelectionMenu.append(listItem);
-  });
-
-  // Update the main dropdown button text
-  fileSelectionDropdown.text(activeFileName);
-  logVerbose(`Active file button text set to: ${activeFileName}`);
-}
+// --- All functions moved to todo-logic.js ---
 
 
 $(document).ready(function () {
-  // Note: Modal instances (addFileModalInstance, renameFileModalInstance) are defined at module level
+  // Modal instances are initialized when first opened below
 
+  logVerbose("Document ready: Initializing UI and listeners.");
   setupDropdownHandlers();
   updateFileSelectionUI(); // Populate file dropdown initially
   loadTodos(todoList); // Load todos for the initially active file
   initializeDropboxSync(); // Initialize Dropbox sync system (will sync active file)
+  setupDeleteFileConfirmListener(); // Setup the listener for the delete confirmation modal's button ONCE
 
-  // --- File Management Event Listeners ---
+  // --- File Management Button Click Handlers (Modal Openers) ---
 
   // Add New File Button Click Handler
   addFileButton.click(function() {
@@ -331,11 +94,13 @@ $(document).ready(function () {
           return;
       }
 
-      // Initialize instance and listeners ONCE
+      // Initialize instance ONCE, setup listeners ONCE
       if (!addFileModalInstance) {
-          // console.log("Initializing Add File Modal instance for the first time."); // Removed log
+          logVerbose("Initializing Add File Modal instance and listeners for the first time.");
           addFileModalInstance = new window.bootstrap.Modal(addModalElement);
-          setupAddFileModalListeners(); // Setup listeners only once
+          setupAddFileModalListeners(); // Setup listeners via imported function
+      } else {
+          logVerbose("Add File Modal instance already exists.");
       }
 
       // Prepare and show
@@ -367,14 +132,16 @@ $(document).ready(function () {
             return;
         }
 
-        // Initialize instance and listeners ONCE
-        if (!renameFileModalInstance) {
-            // console.log("Initializing Rename File Modal instance for the first time."); // Removed log
-            renameFileModalInstance = new window.bootstrap.Modal(renameModalElement);
-            setupRenameFileModalListeners(); // Setup listeners only once
-        }
+      // Initialize instance ONCE, setup listeners ONCE
+      if (!renameFileModalInstance) {
+          logVerbose("Initializing Rename File Modal instance and listeners for the first time.");
+          renameFileModalInstance = new window.bootstrap.Modal(renameModalElement);
+          setupRenameFileModalListeners(); // Setup listeners via imported function
+      } else {
+          logVerbose("Rename File Modal instance already exists.");
+      }
 
-        // Proceed with checks and showing the modal
+      // Proceed with checks and showing the modal
         const currentFilePath = getActiveFile();
         const knownFiles = getKnownFiles();
         const currentFile = knownFiles.find(f => f.path === currentFilePath);
@@ -385,13 +152,13 @@ $(document).ready(function () {
             return;
         }
 
-        const { DEFAULT_FILE_PATH } = await import('./todo-storage.js');
+        // Use imported DEFAULT_FILE_PATH
          if (currentFilePath === DEFAULT_FILE_PATH) {
-             alert("Error: The default todo.txt file cannot be renamed.");
+             showNotification("Error: The default todo.txt file cannot be renamed.", 'alert'); // Use notification
              return;
          }
 
-        currentFileNameToRename.text(currentFile.name);
+        currentFileNameToRename.text(currentFile.name); // Populate modal field
         newRenameFileNameInput.val(currentFile.name);
         renameFileModalInstance.show(); // Show the instance
 
@@ -404,5 +171,50 @@ $(document).ready(function () {
   // REMOVED standalone renameFileForm.submit handler (logic moved to setupRenameFileModalListeners)
 
 
-  // TODO: Add event listener for deleteFileButton
+  // Delete File Button Click Handler
+  deleteFileButton.click(async function() {
+    const filePathToDelete = getActiveFile();
+    const knownFiles = getKnownFiles();
+    const fileToDelete = knownFiles.find(f => f.path === filePathToDelete);
+
+    if (!fileToDelete) {
+        console.error("Cannot delete: Active file not found in known files list.");
+        showNotification("Error: Could not find the current file details.", 'alert');
+        return;
+    }
+
+    // Prevent deleting the default file (use imported constant)
+    if (filePathToDelete === DEFAULT_FILE_PATH) {
+        showNotification("Error: The default todo.txt file cannot be deleted.", 'alert');
+        return;
+    }
+
+    // --- Replace confirm() with Bootstrap Modal ---
+    logVerbose(`Requesting delete confirmation for file: ${fileToDelete.name} (${filePathToDelete})`);
+
+    // Populate the modal
+    $('#fileNameToDelete').text(fileToDelete.name); // Set the file name in the modal body
+    // Store path and name on the modal itself for the confirmation handler
+    $('#deleteFileModalConfirm').data('filePathToDelete', filePathToDelete);
+    $('#deleteFileModalConfirm').data('fileNameToDelete', fileToDelete.name);
+
+    // Show the Bootstrap modal
+    const deleteModalEl = document.getElementById('deleteFileModalConfirm');
+    if (deleteModalEl) {
+        // Use getOrCreateInstance to safely get/create the modal instance
+        const deleteModal = bootstrap.Modal.getOrCreateInstance(deleteModalEl);
+        deleteModal.show();
+    } else {
+        console.error("Delete confirmation modal element (#deleteFileModalConfirm) not found!");
+        // Fallback or show error if modal doesn't exist
+        showNotification("Error: Delete confirmation dialog component is missing.", 'alert');
+    }
+    // --- End modal replacement ---
+
+    // The actual deletion logic is now handled by the listener setup in setupDeleteFileConfirmListener()
+    // which is called once in $(document).ready()
+  });
+
+  // REMOVED standalone delete confirmation listener (moved to setupDeleteFileConfirmListener in todo-logic.js)
+
 });

@@ -1,11 +1,12 @@
 'use strict';
 
 import { uploadTodosToDropbox } from './dropbox-sync.js'; // Import the upload function - Will need modification later
+import { logVerbose, warnVerbose } from './todo-logging.js'; // Import logging functions
 
 // --- Constants ---
 const KNOWN_FILES_KEY = 'todoFiles'; // Stores array of { name: string, path: string }
 const ACTIVE_FILE_KEY = 'activeTodoFile'; // Stores the path (string) of the active file
-const DEFAULT_FILE_PATH = '/todo.txt'; // Default file if none active or found
+export const DEFAULT_FILE_PATH = '/todo.txt'; // Default file if none active or found
 
 // --- Helper Functions ---
 // Helper to generate unique IDs - Exporting for use elsewhere
@@ -15,7 +16,7 @@ export function generateUniqueId() {
 
 function getDynamicStorageKey(baseKey, filePath) {
   if (!filePath) {
-    console.warn(`Cannot generate dynamic key for base "${baseKey}" without a file path.`);
+    warnVerbose(`Cannot generate dynamic key for base "${baseKey}" without a file path.`);
     return null; // Or handle appropriately
   }
   // Replace slashes to create a valid key, ensure uniqueness
@@ -36,7 +37,7 @@ export function setActiveFile(filePath) {
   }
   // Optional: Validate if filePath exists in known files?
   localStorage.setItem(ACTIVE_FILE_KEY, filePath);
-  console.log(`Active file set to: ${filePath}`);
+  logVerbose(`Active file set to: ${filePath}`);
   // Potentially trigger UI update or data reload here
 }
 
@@ -56,7 +57,7 @@ export function getKnownFiles() {
        } else {
          // If list exists but missing default, just add it for the return value
          // It will be saved if other operations modify the list later
-         console.warn("Default file path missing from known files list, adding temporarily.");
+         warnVerbose("Default file path missing from known files list, adding temporarily.");
          files.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
        }
     }
@@ -77,7 +78,7 @@ export function saveKnownFiles(filesArray) {
    }
    // Ensure default file is always present
    if (!filesArray.some(file => file.path === DEFAULT_FILE_PATH)) {
-     console.warn("Default file path missing from saveKnownFiles input, adding it.");
+     warnVerbose("Default file path missing from saveKnownFiles input, adding it.");
      filesArray.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
    }
    localStorage.setItem(KNOWN_FILES_KEY, JSON.stringify(filesArray));
@@ -90,7 +91,7 @@ export function addKnownFile(name, path) {
   }
   const files = getKnownFiles();
   if (files.some(file => file.path === path)) {
-    console.warn(`File with path "${path}" already exists.`);
+    warnVerbose(`File with path "${path}" already exists.`);
     return false; // Indicate file already exists
   }
   files.push({ name, path });
@@ -106,11 +107,11 @@ export function renameKnownFile(oldPath, newName, newPath) {
   const files = getKnownFiles();
   const index = files.findIndex(file => file.path === oldPath);
   if (index === -1) {
-    console.warn(`Cannot find file with path "${oldPath}" to rename.`);
+    warnVerbose(`Cannot find file with path "${oldPath}" to rename.`);
     return false;
   }
   if (files.some(file => file.path === newPath && file.path !== oldPath)) {
-      console.warn(`File with new path "${newPath}" already exists.`);
+      warnVerbose(`File with new path "${newPath}" already exists.`);
       return false; // Prevent renaming to an existing path
   }
   files[index].name = newName;
@@ -130,7 +131,7 @@ export function removeKnownFile(pathToRemove) {
     return false;
   }
   if (pathToRemove === DEFAULT_FILE_PATH) {
-      console.warn("Cannot remove the default file.");
+      warnVerbose("Cannot remove the default file.");
       return false; // Prevent removing the default file
   }
   let files = getKnownFiles();
@@ -142,7 +143,7 @@ export function removeKnownFile(pathToRemove) {
     // If the removed file was the active one, switch to default
     if (getActiveFile() === pathToRemove) {
       setActiveFile(DEFAULT_FILE_PATH);
-      console.log(`Removed active file "${pathToRemove}", switched to default.`);
+      logVerbose(`Removed active file "${pathToRemove}", switched to default.`);
       // Consider triggering a reload of the UI/data for the new active file
     }
     // Also remove associated data from localStorage
@@ -150,10 +151,10 @@ export function removeKnownFile(pathToRemove) {
     const timestampKey = getDynamicStorageKey('todosLastModifiedLocal_', pathToRemove);
     if (todoKey) localStorage.removeItem(todoKey);
     if (timestampKey) localStorage.removeItem(timestampKey);
-    console.log(`Removed stored data for file: ${pathToRemove}`);
+    logVerbose(`Removed stored data for file: ${pathToRemove}`);
     return true;
   } else {
-    console.warn(`Could not find file with path "${pathToRemove}" to remove.`);
+    warnVerbose(`Could not find file with path "${pathToRemove}" to remove.`);
     return false;
   }
 }
@@ -177,13 +178,13 @@ export function getTodosFromStorage() {
         // It assumes the old format exists under the *new* dynamic key.
         // Consider if migration is still needed or how it should work.
         // For now, let's assume new format or empty for new keys.
-        console.warn("Old storage format detected under new key system. This might indicate an issue. Resetting for this file.", storageKey);
+        warnVerbose("Old storage format detected under new key system. This might indicate an issue. Resetting for this file.", storageKey);
         todos = [];
         // saveTodosToStorage(todos); // Avoid recursive call during get
       } else if (Array.isArray(parsedData) && (parsedData.length === 0 || (typeof parsedData[0] === 'object' && Object.prototype.hasOwnProperty.call(parsedData[0], 'id') && Object.prototype.hasOwnProperty.call(parsedData[0], 'text')))) {
         todos = parsedData; // Correct format
       } else {
-        console.warn(`Invalid data format in localStorage for key "${storageKey}". Resetting todos for this file.`);
+        warnVerbose(`Invalid data format in localStorage for key "${storageKey}". Resetting todos for this file.`);
         todos = [];
         // saveTodosToStorage(todos); // Avoid recursive call during get
       }
@@ -191,7 +192,7 @@ export function getTodosFromStorage() {
       console.error(`Error parsing todos from localStorage for key "${storageKey}":`, e);
       todos = [];
       // saveTodosToStorage(todos); // Avoid recursive call during get
-      console.log(`Error parsing todos for key "${storageKey}", returning empty array.`);
+      logVerbose(`Error parsing todos for key "${storageKey}", returning empty array.`);
     }
   }
   // Final safety check
@@ -242,6 +243,8 @@ export function addTodoToStorage(item) {
   todos.push(newTodoObject);
   saveTodosToStorage(todos); // Saves todos for the active file
   // Pass the active file path to the upload function
+  // Note: This will attempt upload even if offline, potentially showing errors.
+  // Consider adding an online check before calling uploadTodosToDropbox.
   uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after add failed:", err)); // Trigger upload for the active file
 }
 
@@ -253,9 +256,11 @@ export function updateTodoInStorage(idToUpdate, newItem) {
     todos[index].text = newItem.toString(); // Assuming newItem is a TodoTxtItem object or similar
     saveTodosToStorage(todos); // Saves todos for the active file
     // Pass the active file path to the upload function
+    // Note: This will attempt upload even if offline, potentially showing errors.
+    // Consider adding an online check before calling uploadTodosToDropbox.
     uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after update failed:", err)); // Trigger upload for the active file
   } else {
-    console.warn(`Could not find todo with ID "${idToUpdate}" in active file "${getActiveFile()}" to update.`);
+    warnVerbose(`Could not find todo with ID "${idToUpdate}" in active file "${getActiveFile()}" to update.`);
   }
 }
 
@@ -267,8 +272,10 @@ export function removeTodoFromStorage(idToDelete) {
   if (todos.length < initialLength) {
     saveTodosToStorage(todos); // Saves todos for the active file
     // Pass the active file path to the upload function
+    // Note: This will attempt upload even if offline, potentially showing errors.
+    // Consider adding an online check before calling uploadTodosToDropbox.
     uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after delete failed:", err)); // Trigger upload for the active file
   } else {
-    console.warn(`Could not find todo with ID "${idToDelete}" in active file "${getActiveFile()}" to delete.`);
+    warnVerbose(`Could not find todo with ID "${idToDelete}" in active file "${getActiveFile()}" to delete.`);
   }
 }
