@@ -15,17 +15,30 @@
   <link rel="stylesheet" href="/assets/css/lib/bootstrap-5.3.2.min.css">
   <link rel="stylesheet" href="/assets/css/ui/datepicker.min.css">
   <link rel="stylesheet" href="/assets/css/todo.css">
+  <link rel="stylesheet" href="/assets/css/notif.min.css">
   <meta name="description" content="A Progressive Web Application (PWA) for managing todo.txt tasks list.">
 </head>
 <body id="page-top">
-  <div class="container">
+  <div id="notif-container" class="toast-container position-fixed start-50" style="top: 15%; transform: translateX(-50%);"></div>
+  <div id="flash-container" style="display: none;"></div>
+    <div class="container">
     <br>
     <h1 style="visibility: hidden; position: absolute; height: 0; overflow: hidden;">Todo.txt Webapp</h1>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">Todo.txt</h2>
-      <div class="d-flex align-items-center"> <!-- Wrapper for button and status -->
-        <span id="syncStatusIndicator" class="me-2 text-muted small" title="Sync Status"></span> <!-- Added Sync Status Indicator -->
-        <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+      <h2 class="mb-0 me-3">Todo.txt</h2>
+      <div class="d-flex align-items-center mb-2 mb-md-0 me-md-auto">
+        <div class="btn-group me-2">
+          <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" id="fileSelectionDropdown" data-bs-toggle="dropdown" aria-expanded="false">todo.txt</button>
+          <ul class="dropdown-menu" id="fileSelectionMenu">
+            <!-- File list will be populated by JS -->
+            <li>
+              <a class="dropdown-item" href="#">Loading files...</a>
+            </li>
+          </ul>
+        </div><button type="button" id="addFileButton" class="btn btn-outline-secondary btn-sm me-1" title="Add New File"><i class="fa-solid fa-plus"></i></button> <button type="button" id="renameFileButton" class="btn btn-outline-secondary btn-sm me-1" title="Rename Current File"><i class="fa-solid fa-pen-to-square"></i></button> <button type="button" id="deleteFileButton" class="btn btn-outline-danger btn-sm" title="Delete Current File"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="d-flex align-items-center">
+        <span id="syncStatusIndicator" class="me-2 text-muted small" title="Sync Status"></span> <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
       </div>
     </div>
     <div class="add-todo-section mb-3">
@@ -136,17 +149,64 @@
         </div>
       </div>
     </div>
-  </div>
-  <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
+  </div><!-- Add File Modal -->
+  <div class="modal fade" id="addFileModal" tabindex="-1" aria-labelledby="addFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addFileModalLabel">Add New Todo File</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addFileForm" name="addFileForm">
+            <div class="mb-3">
+              <label for="newFileNameInput" class="form-label">File Name:</label> <input type="text" class="form-control" id="newFileNameInput" placeholder="e.g., work.txt" required="">
+              <div class="form-text">
+                Must end with .txt (will be added if missing).
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-complementary btn-rounded" data-bs-dismiss="modal">Cancel</button> <button type="submit" class="btn btn-primary btn-rounded" form="addFileForm">Add File</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- End Add File Modal -->
+  <!-- Rename File Modal -->
+  <div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="renameFileModalLabel">Rename File</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="renameFileForm" name="renameFileForm">
+            <p>Renaming: <strong id="currentFileNameToRename"></strong></p>
+            <div class="mb-3">
+              <label for="newRenameFileNameInput" class="form-label">New File Name:</label> <input type="text" class="form-control" id="newRenameFileNameInput" placeholder="e.g., work_updated.txt" required="">
+              <div class="form-text">
+                Must end with .txt (will be added if missing). Cannot rename to an existing file name.
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-complementary btn-rounded" data-bs-dismiss="modal">Cancel</button> <button type="submit" class="btn btn-primary btn-rounded" form="renameFileForm">Rename File</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- End Rename File Modal -->
   <script src="/assets/js/lib/jquery-3.7.1.slim.min.js"></script>
+  <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
   <script src="/assets/js/lib/bootstrap-5.3.2.min.js"></script>
   <script src="/assets/js/lib/bootstrap-datepicker-1.10.0.min.js"></script>
-  <script src="/assets/js/lib/dropbox-sdk-10.34.0.min.js"></script>
-  <script src="/assets/js/lib/jstodotxt.min.js"></script>
   <script src="/assets/js/lib/clipboard-2.0.11.min.js"></script>
+  <script src="/assets/js/notif-flash.min.js"></script>
   <script src="/assets/js/lib/fontawesome-6.7.2.min.js"></script>
   <script src="/assets/js/lib/brands-6.7.2.min.js"></script>
   <script src="/assets/js/lib/solid-6.7.2.min.js"></script>
+  <script src="/assets/js/lib/dropbox-sdk-10.34.0.min.js"></script>
+  <script src="/assets/js/lib/jstodotxt.min.js"></script>
   <script src="/assets/js/cache.js"></script>
   <script src="/assets/js/dropbox-sync.js" type="module"></script>
   <script src="/assets/js/todo.js" type="module"></script>

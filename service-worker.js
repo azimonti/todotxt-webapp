@@ -7,6 +7,7 @@ const assetsToCache = [
   '/assets/css/lib/bootstrap-5.3.2.min.css',
   '/assets/css/lib/bootstrap-5.3.2.min.css.map',
   '/assets/css/ui/datepicker.min.css',
+  '/assets/css/notif.min.css',
   '/assets/css/todo.css',
   '/assets/js/lib/bootstrap-5.3.2.min.js',
   '/assets/js/lib/bootstrap-5.3.2.min.js.map',
@@ -24,6 +25,7 @@ const assetsToCache = [
   '/assets/js/lib/jstodotxt.min.js.map',
   '/assets/js/lib/popper-2.11.8.min.js',
   '/assets/js/lib/popper-2.11.8.min.js.map',
+  '/assets/js/notif-flash.min.js',
   '/assets/js/cache.js',
 
   '/assets/js/todo-datepicker.js',

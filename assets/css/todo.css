@@ -185,6 +185,10 @@ body {
   --bs-btn-disabled-border-color: #FF4030;
 }
 
+.list-group-item {
+  padding:var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
+}
+
 /* Dropbox Button Styling */
 .dropbox-auth-button {
   background-color: #FFF !important; /* White background, override btn-light if needed */
