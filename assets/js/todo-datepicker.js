@@ -7,7 +7,7 @@ $(document).ready(function() {
         leftArrow: '<i class="fa-solid fa-angle-left"></i>',
         rightArrow: '<i class="fa-solid fa-angle-right"></i>'
       },
-        orientation: "bottom left"
+      orientation: "bottom left"
     }).on('show', function() {
       $('.datepicker').addClass('open');
 

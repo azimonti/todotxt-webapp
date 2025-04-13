@@ -22,8 +22,11 @@
     <br>
     <h1 style="visibility: hidden; position: absolute; height: 0; overflow: hidden;">Todo.txt Webapp</h1>
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">Tasks List</h2><!-- Reverted to button, styled as icon button -->
-       <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 me-2 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
+      <h2 class="mb-0">Todo.txt</h2>
+      <div class="d-flex align-items-center"> <!-- Wrapper for button and status -->
+        <span id="syncStatusIndicator" class="me-2 text-muted small" title="Sync Status"></span> <!-- Added Sync Status Indicator -->
+        <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
+      </div>
     </div>
     <div class="add-todo-section mb-3">
       <div class="input-group mb-2">
@@ -38,22 +41,22 @@
                 <hr class="dropdown-divider">
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="A">(A)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="A">(A)</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="B">(B)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="B">(B)</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="C">(C)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="C">(C)</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="D">(D)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="D">(D)</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="E">(E)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="E">(E)</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" data-value="F">(F)</a>
+                <a class="dropdown-item priority-item" href="#" data-value="F">(F)</a>
               </li>
             </ul>
           </div>
@@ -134,17 +137,18 @@
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
   <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
   <script src="/assets/js/lib/jquery-3.7.1.slim.min.js"></script>
   <script src="/assets/js/lib/bootstrap-5.3.2.min.js"></script>
   <script src="/assets/js/lib/bootstrap-datepicker-1.10.0.min.js"></script>
+  <script src="/assets/js/lib/dropbox-sdk-10.34.0.min.js"></script>
   <script src="/assets/js/lib/jstodotxt.min.js"></script>
   <script src="/assets/js/lib/clipboard-2.0.11.min.js"></script>
   <script src="/assets/js/lib/fontawesome-6.7.2.min.js"></script>
   <script src="/assets/js/lib/brands-6.7.2.min.js"></script>
   <script src="/assets/js/lib/solid-6.7.2.min.js"></script>
   <script src="/assets/js/cache.js"></script>
+  <script src="/assets/js/dropbox-sync.js" type="module"></script>
   <script src="/assets/js/todo.js" type="module"></script>
   <script src="/assets/js/todo-datepicker.js"></script>
 </body>

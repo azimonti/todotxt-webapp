@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todotxt-cache-v1-0-0';
+const CACHE_NAME = 'todotxt-cache-v1-0-1'; // Updated cache version
 const CACHE_AT_ONCE = false;
 const assetsToCache = [
   '/index.html',
@@ -12,6 +12,7 @@ const assetsToCache = [
   '/assets/js/lib/bootstrap-5.3.2.min.js.map',
   '/assets/js/lib/bootstrap-datepicker-1.10.0.min.js.map',
   '/assets/js/lib/bootstrap-datepicker-1.10.0.min.js',
+  '/assets/js/lib/dropbox-sdk-10.34.0.min.js',
   '/assets/js/lib/clipboard-2.0.11.min.js',
   '/assets/js/lib/clipboard-2.0.11.min.js.map',
   '/assets/js/lib/fontawesome-6.7.2.min.js',
@@ -24,15 +25,25 @@ const assetsToCache = [
   '/assets/js/lib/popper-2.11.8.min.js',
   '/assets/js/lib/popper-2.11.8.min.js.map',
   '/assets/js/cache.js',
+
   '/assets/js/todo-datepicker.js',
   '/assets/js/todo-dropdowns.js',
   '/assets/js/todo-event-handlers.js',
   '/assets/js/todo-import.js',
   '/assets/js/todo-list-display.js',
   '/assets/js/todo-load.js',
+  '/assets/js/todo-logging.js',
   '/assets/js/todo-storage.js',
   '/assets/js/todo-ui.js',
   '/assets/js/todo.js',
+
+  '/assets/js/dropbox-sync.js',
+  '/assets/js/dropbox/config.js',
+  '/assets/js/dropbox/ui.js',
+  '/assets/js/dropbox/auth.js',
+  '/assets/js/dropbox/offline.js',
+  '/assets/js/dropbox/api.js',
+
   '/img/icons/todotxt.ico',
   '/img/icons/todotxt-32x32.png',
   '/img/icons/todotxt-180x180.png',

@@ -43,6 +43,17 @@ node node-server.js --secure [--verbose]
 5. **Open `index.html` in your web browser:**
 Once the server is running, you can access the webapp by opening `index.html` in your browser. Typically, the server will be accessible at `http://localhost:8000`.
 
+## Optional: Dropbox Integration
+
+If you want to enable Dropbox integration, you need to configure your Dropbox App Key in `assets/js/dropbox/config.js`.
+
+1. **Configure Dropbox App Key:**
+   - Open `assets/js/dropbox/config.js` and update the `CLIENT_ID` variable with your actual Dropbox App Key.
+   ```javascript
+   export const CLIENT_ID = 'YOUR_DROPBOX_APP_KEY'; // Replace with your actual Dropbox App Key
+   ```
+   - Make sure to replace `'YOUR_DROPBOX_APP_KEY'` with your own Dropbox App Key.
+
 ## Contributing
 
 Contributions to the Todo.txt Webapp project are welcome. For major changes, please open an issue first to discuss what you would like to change.

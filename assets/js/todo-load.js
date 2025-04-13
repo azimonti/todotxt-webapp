@@ -6,6 +6,7 @@ import { getTodosFromStorage, saveTodosToStorage } from './todo-storage.js';
 import { toggleTodoCompletion, startEditTodo, deleteTodoItem  } from './todo.js';
 import { addTodoToList } from './todo-ui.js';
 import { updateDropdowns } from './todo-dropdowns.js';
+import { logVerbose } from './todo-logging.js';
 
 export function loadTodos(todoList) {
   // getTodosFromStorage now returns array of {id, text} or empty array
@@ -77,8 +78,8 @@ export function saveTodosFromText(textContent) {
       text: line
     }));
 
-  console.log(`Parsed ${newTodoObjects.length} todos from downloaded text.`);
+  logVerbose(`Parsed ${newTodoObjects.length} todos from downloaded text.`);
   saveTodosToStorage(newTodoObjects); // Overwrite local storage
-  console.log('Saved downloaded todos to local storage.');
+  logVerbose('Saved downloaded todos to local storage.');
   // The UI reload should happen in the calling function (syncWithDropbox)
 }

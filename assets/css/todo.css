@@ -2,12 +2,32 @@ body {
   font-family: Arial, sans-serif;
   margin: 20px;
 }
-.todo-list {
-  background-color: #2C2C2C;
-}
 
 .container {
   margin-top: 20px;
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: #0083B3;
+  --bs-dropdown-link-color: #FFF;
+  --bs-dropdown-link-hover-color:#FFF;
+  --bs-dropdown-link-hover-bg:#006F98;
+  --bs-dropdown-hover-border-color:#00698F;
+}
+
+.dropdown-item {
+  color:#FFF;
+  margin:5px 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.dropdown-divider {
+  border-top:1px solid #007099;
+}
+
+.priority-item {
+  text-align: center;
 }
 
 .form-control-todo {
@@ -128,6 +148,7 @@ body {
 }
 
 .btn-primary {
+  font-weight: 800;
   --bs-btn-color:#FFF;
   --bs-btn-padding-y:1rem;
   --bs-btn-bg:#0083B3;
@@ -146,6 +167,7 @@ body {
 }
 
 .btn-complementary {
+  font-weight: 800;
   --bs-btn-color: #FFF;
   --bs-btn-padding-y: 1rem;
   --bs-btn-bg: #FF4030;

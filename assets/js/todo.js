@@ -7,7 +7,7 @@ import { removeTodoFromStorage, updateTodoInStorage } from './todo-storage.js';
 import { applyItemStyles } from './todo-ui.js';
 import './todo-import.js';
 import { setupDropdownHandlers } from './todo-dropdowns.js';
-import { initializeDropboxAuth } from './dropbox-sync.js'; // Import Dropbox auth initializer
+import { initializeDropboxSync } from './dropbox-sync.js'; // Import Dropbox sync initializer
 
 // Helper function to format date from YYYY-MM-DD or Date object to MM/DD/YYYY for datepicker
 function formatDateForPicker(dateInput) {
@@ -118,5 +118,5 @@ $(document).ready(function () {
 
   setupDropdownHandlers();
   loadTodos(todoList);
-  initializeDropboxAuth(); // Initialize Dropbox authentication
+  initializeDropboxSync(); // Initialize Dropbox sync system
 });
