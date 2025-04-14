@@ -31,18 +31,17 @@ const assetsToCache = [
   '/assets/js/todo-datepicker.js',
   '/assets/js/todo-dropdowns.js',
   '/assets/js/todo-event-handlers.js',
-  '/assets/js/todo-files.js', // Added missing file
+  '/assets/js/todo-files.js',
   '/assets/js/todo-import.js',
   '/assets/js/todo-list-display.js',
   '/assets/js/todo-load.js',
   '/assets/js/todo-logging.js',
-  '/assets/js/todo-offcanvas.js',
   '/assets/js/todo-storage.js',
   '/assets/js/todo-ui.js',
   '/assets/js/todo.js',
 
   '/assets/js/dropbox-sync.js',
-  '/assets/js/sync-coordinator.js', // Added new coordinator file
+  '/assets/js/todo-sync-coordinator.js',
   '/assets/js/dropbox/config.js',
   '/assets/js/dropbox/ui.js',
   '/assets/js/dropbox/auth.js',

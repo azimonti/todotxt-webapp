@@ -199,9 +199,9 @@ async function discoverDropboxFiles() {
     // (This is usually handled by getKnownFiles, but double-check)
     const currentKnownFiles = getKnownFiles();
     if (!currentKnownFiles.some(f => f.path === DEFAULT_FILE_PATH)) {
-        warnVerbose("Default file path still missing after discovery, adding it.");
-        addKnownFile('todo.txt', DEFAULT_FILE_PATH);
-        updateFileSelectionUI();
+      warnVerbose("Default file path still missing after discovery, adding it.");
+      addKnownFile('todo.txt', DEFAULT_FILE_PATH);
+      updateFileSelectionUI();
     }
 
 

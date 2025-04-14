@@ -40,10 +40,10 @@ export async function initializeDropboxApi(token) {
     // Dynamically import and call the coordinator's sync function
     // This assumes initializeDropboxApi is called *after* coordinator is initialized
     try {
-        const { coordinateSync } = await import('../sync-coordinator.js');
-        await coordinateSync();
+      const { coordinateSync } = await import('../todo-sync-coordinator.js');
+      await coordinateSync();
     } catch (coordError) {
-        console.error("Failed to trigger initial sync via coordinator:", coordError);
+      console.error("Failed to trigger initial sync via coordinator:", coordError);
     }
 
   } catch (error) {
@@ -117,7 +117,7 @@ export async function downloadTodosFromDropbox(filePath) {
     warnVerbose('Dropbox API not initialized. Cannot download.');
     return { success: false, content: null };
   }
-   if (!filePath) {
+  if (!filePath) {
     console.error('downloadTodosFromDropbox called without filePath.');
     return { success: false, content: null };
   }
@@ -180,8 +180,8 @@ export async function uploadTodosToDropbox(filePath, todoFileContent) {
     return false; // Indicate failure
   }
   if (typeof todoFileContent !== 'string') {
-      console.error('uploadTodosToDropbox called without string content.');
-      return false; // Indicate failure
+    console.error('uploadTodosToDropbox called without string content.');
+    return false; // Indicate failure
   }
 
   // Check online status first - Coordinator should ideally check before calling,
@@ -258,8 +258,8 @@ export async function renameDropboxFile(oldPath, newPath) {
     return false;
   }
   if (oldPath === newPath) {
-      console.warn('Rename cancelled: old path and new path are the same.');
-      return false; // Or true? Let's say false as no action taken.
+    console.warn('Rename cancelled: old path and new path are the same.');
+    return false; // Or true? Let's say false as no action taken.
   }
 
   logVerbose(`Attempting to rename Dropbox file from "${oldPath}" to "${newPath}"...`);
@@ -279,9 +279,9 @@ export async function renameDropboxFile(oldPath, newPath) {
     // Provide more specific feedback if possible
     let userMessage = `Failed to rename file on Dropbox.`;
     if (error?.error?.error_summary?.includes('to/conflict/file')) {
-        userMessage = `Failed to rename: A file already exists at "${newPath}".`;
+      userMessage = `Failed to rename: A file already exists at "${newPath}".`;
     } else if (error?.error?.error_summary?.includes('from_lookup/not_found')) {
-        userMessage = `Failed to rename: The original file "${oldPath}" was not found.`;
+      userMessage = `Failed to rename: The original file "${oldPath}" was not found.`;
     }
     // Check for invalid access token error using the specific error tag or summary string
     const errorSummary = error?.error?.error_summary || String(error);
@@ -323,12 +323,12 @@ export async function deleteDropboxFile(filePath) {
     return true;
   } catch (error) {
     console.error(`Error deleting file "${filePath}" on Dropbox:`, error?.error?.error_summary || error);
-     // Provide more specific feedback if possible
+    // Provide more specific feedback if possible
     let userMessage = `Failed to delete file on Dropbox.`;
     if (error?.error?.error_summary?.includes('path_lookup/not_found')) {
-        // If file not found, maybe treat as success for deletion? Or specific error?
-        // For now, let's treat not found as a failure to delete what was intended.
-        userMessage = `Failed to delete: The file "${filePath}" was not found on Dropbox.`;
+      // If file not found, maybe treat as success for deletion? Or specific error?
+      // For now, let's treat not found as a failure to delete what was intended.
+      userMessage = `Failed to delete: The file "${filePath}" was not found on Dropbox.`;
     }
     // Use notification instead of alert
     // Check for invalid access token error using the specific error tag or summary string

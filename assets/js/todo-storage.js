@@ -48,17 +48,17 @@ export function getKnownFiles() {
     const files = filesJSON ? JSON.parse(filesJSON) : [];
     // Ensure default file is always present if list is empty or doesn't contain it
     if (!files.some(file => file.path === DEFAULT_FILE_PATH)) {
-       if (files.length === 0) {
-         // If list is empty, add default and save
-         const defaultFile = { name: 'todo.txt', path: DEFAULT_FILE_PATH };
-         saveKnownFiles([defaultFile]);
-         return [defaultFile];
-       } else {
-         // If list exists but missing default, just add it for the return value
-         // It will be saved if other operations modify the list later
-         warnVerbose("Default file path missing from known files list, adding temporarily.");
-         files.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
-       }
+      if (files.length === 0) {
+        // If list is empty, add default and save
+        const defaultFile = { name: 'todo.txt', path: DEFAULT_FILE_PATH };
+        saveKnownFiles([defaultFile]);
+        return [defaultFile];
+      } else {
+        // If list exists but missing default, just add it for the return value
+        // It will be saved if other operations modify the list later
+        warnVerbose("Default file path missing from known files list, adding temporarily.");
+        files.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
+      }
     }
     return files;
   } catch (e) {
@@ -71,16 +71,16 @@ export function getKnownFiles() {
 }
 
 export function saveKnownFiles(filesArray) {
-   if (!Array.isArray(filesArray)) {
-     console.error("Attempted to save non-array as known files:", filesArray);
-     return;
-   }
-   // Ensure default file is always present
-   if (!filesArray.some(file => file.path === DEFAULT_FILE_PATH)) {
-     warnVerbose("Default file path missing from saveKnownFiles input, adding it.");
-     filesArray.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
-   }
-   localStorage.setItem(KNOWN_FILES_KEY, JSON.stringify(filesArray));
+  if (!Array.isArray(filesArray)) {
+    console.error("Attempted to save non-array as known files:", filesArray);
+    return;
+  }
+  // Ensure default file is always present
+  if (!filesArray.some(file => file.path === DEFAULT_FILE_PATH)) {
+    warnVerbose("Default file path missing from saveKnownFiles input, adding it.");
+    filesArray.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
+  }
+  localStorage.setItem(KNOWN_FILES_KEY, JSON.stringify(filesArray));
 }
 
 export function addKnownFile(name, path) {
@@ -99,10 +99,10 @@ export function addKnownFile(name, path) {
 }
 
 export function renameKnownFile(oldPath, newName, newPath) {
-   if (!oldPath || !newName || !newPath) {
-     console.error("Cannot rename known file without oldPath, newName, and newPath.");
-     return false;
-   }
+  if (!oldPath || !newName || !newPath) {
+    console.error("Cannot rename known file without oldPath, newName, and newPath.");
+    return false;
+  }
   const files = getKnownFiles();
   const index = files.findIndex(file => file.path === oldPath);
   if (index === -1) {
@@ -110,8 +110,8 @@ export function renameKnownFile(oldPath, newName, newPath) {
     return false;
   }
   if (files.some(file => file.path === newPath && file.path !== oldPath)) {
-      warnVerbose(`File with new path "${newPath}" already exists.`);
-      return false; // Prevent renaming to an existing path
+    warnVerbose(`File with new path "${newPath}" already exists.`);
+    return false; // Prevent renaming to an existing path
   }
   // --- Move associated data in localStorage ---
   const oldTodoKey = getDynamicStorageKey('todos_', oldPath);
@@ -121,14 +121,12 @@ export function renameKnownFile(oldPath, newName, newPath) {
   const oldSyncTimeKey = getDynamicStorageKey('lastSyncTime_', oldPath);
   const newSyncTimeKey = getDynamicStorageKey('lastSyncTime_', newPath);
 
-  let dataMoved = false;
   if (oldTodoKey && newTodoKey) {
     const todosData = localStorage.getItem(oldTodoKey);
     if (todosData) {
       localStorage.setItem(newTodoKey, todosData);
       localStorage.removeItem(oldTodoKey);
       logVerbose(`Moved todo data from ${oldTodoKey} to ${newTodoKey}`);
-      dataMoved = true; // Mark that main data was moved
 
       // Move timestamps only if main data was moved successfully
       const localModTimestamp = localStorage.getItem(oldLocalModKey);
@@ -175,8 +173,8 @@ export function removeKnownFile(pathToRemove) {
     return false;
   }
   if (pathToRemove === DEFAULT_FILE_PATH) {
-      warnVerbose("Cannot remove the default file.");
-      return false; // Prevent removing the default file
+    warnVerbose("Cannot remove the default file.");
+    return false; // Prevent removing the default file
   }
   let files = getKnownFiles();
   const initialLength = files.length;
@@ -249,8 +247,8 @@ export function saveTodosToStorage(todoObjects) {
   const timestampKey = getDynamicStorageKey('todosLastModifiedLocal_', activeFilePath);
 
   if (!storageKey || !timestampKey) {
-      console.error("Cannot save todos, failed to generate storage keys for path:", activeFilePath);
-      return;
+    console.error("Cannot save todos, failed to generate storage keys for path:", activeFilePath);
+    return;
   }
 
   if (!Array.isArray(todoObjects)) {

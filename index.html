@@ -23,15 +23,13 @@
   <div id="flash-container" style="display: none;"></div>
   <div class="container-fluid">
     <div class="row">
-      <!-- Offcanvas Sidebar -->
       <div class="offcanvas offcanvas-start bg-light" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Files</h5>
-          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          <h5 class="offcanvas-title" id="offcanvasSidebarLabel">Files</h5><button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
           <div class="d-flex justify-content-end mb-2">
-             <button type="button" id="addFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Add New File"><i class="fa-solid fa-plus"></i> </button>
+            <button type="button" id="addFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Add New File"><i class="fa-solid fa-plus"></i></button>
           </div>
           <ul class="nav flex-column mb-2" id="fileListSidebar">
             <!-- File list will be populated by JS -->
@@ -40,121 +38,113 @@
             </li>
           </ul>
           <div class="mt-auto pt-2 border-top d-flex justify-content-start">
-             <button type="button" id="renameFileButton" class="btn btn-light btn-offcanvas btn-sm me-1" title="Rename Current File"><i class="fa-solid fa-pen-to-square"></i> </button>
-             <button type="button" id="deleteFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Delete Current File"><i class="fa-solid fa-times"></i> </button>
+            <button type="button" id="renameFileButton" class="btn btn-light btn-offcanvas btn-sm me-1" title="Rename Current File"><i class="fa-solid fa-pen-to-square"></i></button> <button type="button" id="deleteFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Delete Current File"><i class="fa-solid fa-times"></i></button>
           </div>
         </div>
       </div>
-      <!-- End Offcanvas Sidebar -->
       <main class="col-12 px-md-4">
         <div class="pt-3 pb-2 mb-3 border-bottom d-flex justify-content-between align-items-center flex-wrap">
-           <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-             <!-- Updated button to toggle offcanvas -->
-             <button class="btn btn-light me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar" aria-label="Toggle sidebar">
-               <i class="fa-solid fa-bars"></i>
-             </button>
-             <h1 class="h2 mb-0" id="currentFileNameHeader">Todo.txt</h1>
-           </div>
-           <div class="d-flex align-items-center">
-             <span id="syncStatusIndicator" class="me-2 text-muted small" title="Sync Status"></span>
-             <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
-           </div>
+          <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+            <button class="btn btn-light me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+            <h1 class="h2 mb-0" id="currentFileNameHeader">Todo.txt</h1>
+          </div>
+          <div class="d-flex align-items-center">
+            <span id="syncStatusIndicator" class="me-2 text-muted small" title="Sync Status"></span> <button type="button" id="dropboxAuthButton" class="btn btn-light p-1 dropbox-auth-button" title="Connect to Dropbox" style="line-height: 1;"><i class="fa-brands fa-dropbox fs-4 align-middle" style="color: #0083B3;"></i></button>
+          </div>
         </div>
         <div class="add-todo-section mb-3">
           <div class="input-group mb-2">
             <div class="col-md-4 col-12">
-          <div class="dropdown ms-2 dropdown-center">
-            <button class="btn btn-primary btn-rounded-mobile btn-rounded-left dropdown-toggle w-100" type="button" id="priorityDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Priority</button> <input type="hidden" id="prioritySelect" value="">
-            <ul class="dropdown-menu" id="priorityDropdownMenu" aria-labelledby="priorityDropdownButton">
-              <li>
-                <a class="dropdown-item" href="#" data-value="">Priority</a>
-              </li>
-              <li>
-                <hr class="dropdown-divider">
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="A">(A)</a>
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="B">(B)</a>
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="C">(C)</a>
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="D">(D)</a>
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="E">(E)</a>
-              </li>
-              <li>
-                <a class="dropdown-item priority-item" href="#" data-value="F">(F)</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-md-4 col-12 mt-2 mt-md-0">
-          <div class="dropdown ms-2 dropdown-center">
-            <button class="btn btn-primary btn-rounded-mobile dropdown-toggle w-100" type="button" id="projectDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Project</button> <input type="hidden" id="projectSelect" value=""> <!-- Hidden input for project -->
-            <ul class="dropdown-menu" id="projectDropdownMenu" aria-labelledby="projectDropdownButton">
-              <!-- Options will be populated by JS -->
-            </ul>
-          </div>
-        </div>
-        <div class="col-md-4 col-12 mt-2 mt-md-0">
-          <div class="dropdown ms-2 dropdown-center">
-            <button class="btn btn-primary btn-rounded-mobile btn-rounded-right dropdown-toggle w-100" type="button" id="contextDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Context</button> <input type="hidden" id="contextSelect" value=""> <!-- Hidden input for context -->
-            <ul class="dropdown-menu" id="contextDropdownMenu" aria-labelledby="contextDropdownButton">
-              <!-- Options will be populated by JS -->
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="mb-2">
-        <div class="row gx-0 gx-md-2">
-          <div class="col-12 col-md-6 mb-2 mb-md-0">
-            <div class="datepicker-container">
-              <div class="form-group">
-                <label for="createdDate">Created:</label> <input type="text" class="form-control date-picker form-control-date-left" id="createdDate" data-datepicker-color="primary">
+              <div class="dropdown ms-2 dropdown-center">
+                <button class="btn btn-primary btn-rounded-mobile btn-rounded-left dropdown-toggle w-100" type="button" id="priorityDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Priority</button> <input type="hidden" id="prioritySelect" value="">
+                <ul class="dropdown-menu" id="priorityDropdownMenu" aria-labelledby="priorityDropdownButton">
+                  <li>
+                    <a class="dropdown-item" href="#" data-value="">Priority</a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider">
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="A">(A)</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="B">(B)</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="C">(C)</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="D">(D)</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="E">(E)</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item priority-item" href="#" data-value="F">(F)</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-4 col-12 mt-2 mt-md-0">
+              <div class="dropdown ms-2 dropdown-center">
+                <button class="btn btn-primary btn-rounded-mobile dropdown-toggle w-100" type="button" id="projectDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Project</button> <input type="hidden" id="projectSelect" value="">
+                <ul class="dropdown-menu" id="projectDropdownMenu" aria-labelledby="projectDropdownButton">
+                  <!-- Options will be populated by JS -->
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-4 col-12 mt-2 mt-md-0">
+              <div class="dropdown ms-2 dropdown-center">
+                <button class="btn btn-primary btn-rounded-mobile btn-rounded-right dropdown-toggle w-100" type="button" id="contextDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">Context</button> <input type="hidden" id="contextSelect" value="">
+                <ul class="dropdown-menu" id="contextDropdownMenu" aria-labelledby="contextDropdownButton">
+                  <!-- Options will be populated by JS -->
+                </ul>
               </div>
             </div>
           </div>
-          <div class="col-12 col-md-6">
-            <div class="datepicker-container">
-              <div class="form-group">
-                <label for="dueDate">Due:</label> <input type="text" class="form-control date-picker form-control-date-right" id="dueDate" data-datepicker-color="primary">
+          <div class="mb-2">
+            <div class="row gx-0 gx-md-2">
+              <div class="col-12 col-md-6 mb-2 mb-md-0">
+                <div class="datepicker-container">
+                  <div class="form-group">
+                    <label for="createdDate">Created:</label> <input type="text" class="form-control date-picker form-control-date-left" id="createdDate" data-datepicker-color="primary">
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="datepicker-container">
+                  <div class="form-group">
+                    <label for="dueDate">Due:</label> <input type="text" class="form-control date-picker form-control-date-right" id="dueDate" data-datepicker-color="primary">
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <div class="row g-2 mb-2 align-items-md-stretch">
+            <div class="col-12 col-md">
+              <input type="text" class="form-control form-control-todo py-3 h-100" placeholder="Enter todo item" id="todoInput">
+            </div>
+            <div class="col-12 col-md-auto">
+              <button class="btn btn-primary btn-rounded-mobile btn-rounded-right-desktop w-100 w-md-auto py-3 h-100" type="button" id="addButton">Add Todo</button>
+            </div>
+          </div>
+          <div class="row mt-2 gx-0 gx-md-2">
+            <div class="col">
+              <button class="btn btn-primary w-100 btn-rounded-left px-0 px-md-3" type="button" id="filterButton">Filter</button>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary w-100 px-0 px-md-3" type="button" id="copyAllButton">Copy</button>
+            </div>
+            <div class="col">
+              <button class="btn btn-primary w-100 px-0 px-md-3 btn-rounded-right" type="button" id="importButton">Import</button>
+            </div>
+          </div>
+          <textarea class="form-control mt-2" id="importTextarea" rows="5" style="display:none;" placeholder="Paste todo items here, one per line"></textarea>
         </div>
-      </div>
-      <div class="row g-2 mb-2 align-items-md-stretch">
-        <div class="col-12 col-md">
-          <input type="text" class="form-control form-control-todo py-3 h-100" placeholder="Enter todo item" id="todoInput">
-        </div>
-        <div class="col-12 col-md-auto">
-          <button class="btn btn-primary btn-rounded-mobile btn-rounded-right-desktop w-100 w-md-auto py-3 h-100" type="button" id="addButton">Add Todo</button>
-        </div>
-      </div>
-      <div class="row mt-2 gx-0 gx-md-2">
-        <div class="col">
-          <button class="btn btn-primary w-100 btn-rounded-left px-0 px-md-3" type="button" id="filterButton">Filter</button>
-        </div>
-        <div class="col">
-          <button class="btn btn-primary w-100 px-0 px-md-3" type="button" id="copyAllButton">Copy</button>
-        </div>
-        <div class="col">
-          <button class="btn btn-primary w-100 px-0 px-md-3 btn-rounded-right" type="button" id="importButton">Import</button>
-        </div>
-      </div>
-      <textarea class="form-control mt-2" id="importTextarea" rows="5" style="display:none;" placeholder="Paste todo items here, one per line"></textarea>
+        <ul class="list-group jsTodoTxt todo-list" id="todo-list"></ul>
+      </main>
     </div>
-    <ul class="list-group jsTodoTxt todo-list" id="todo-list"></ul>
-  </main> <!-- End Main Content -->
-  </div> <!-- End Row -->
-  </div> <!-- End Container Fluid -->
-
-  <!-- Conflict Resolution Modal -->
+  </div>
   <div class="modal fade" id="conflictModal" tabindex="-1" aria-labelledby="conflictModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -162,7 +152,7 @@
           <h5 class="modal-title" id="conflictModalLabel">Sync Conflict Detected</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>A conflict was detected for file: <strong id="conflictFileName"></strong></p> <!-- Added file name display -->
+          <p>A conflict was detected for file: <strong id="conflictFileName"></strong></p><!-- Added file name display -->
           <p>The version on Dropbox is newer than your last saved local version.</p>
           <p>Which version would you like to keep?</p>
           <p><strong>Local Last Saved:</strong> <span id="localConflictTime"></span><br>
@@ -173,7 +163,7 @@
         </div>
       </div>
     </div>
-  </div><!-- Add File Modal -->
+  </div>
   <div class="modal fade" id="addFileModal" tabindex="-1" aria-labelledby="addFileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -195,8 +185,7 @@
         </div>
       </div>
     </div>
-  </div><!-- End Add File Modal -->
-  <!-- Rename File Modal -->
+  </div>
   <div class="modal fade" id="renameFileModal" tabindex="-1" aria-labelledby="renameFileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -219,28 +208,23 @@
         </div>
       </div>
     </div>
-  </div><!-- End Rename File Modal -->
-  <!-- Delete File Confirmation Modal -->
+  </div>
   <div class="modal fade" id="deleteFileModalConfirm" tabindex="-1" aria-labelledby="deleteFileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deleteFileModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="deleteFileModalLabel">Confirm Deletion</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>Are you sure you want to delete the file "<strong id="fileNameToDelete"></strong>"?</p>
           <p class="text-danger"><small>This action cannot be undone.</small></p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-complementary btn-rounded" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary btn-rounded" id="confirmDeleteFileButton">Delete File</button>
+          <button type="button" class="btn btn-complementary btn-rounded" data-bs-dismiss="modal">Cancel</button> <button type="button" class="btn btn-primary btn-rounded" id="confirmDeleteFileButton">Delete File</button>
         </div>
       </div>
     </div>
   </div>
-  <!-- End Delete File Confirmation Modal -->
-
   <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
   <script src="/assets/js/lib/jquery-3.7.1.slim.min.js"></script>
   <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
@@ -255,7 +239,7 @@
   <script src="/assets/js/lib/jstodotxt.min.js"></script>
   <script src="/assets/js/cache.js"></script>
   <script src="/assets/js/dropbox-sync.js" type="module"></script>
-  <script src="/assets/js/todo.js" type="module"></script> <!-- This likely initializes sidebar/offcanvas logic -->
+  <script src="/assets/js/todo.js" type="module"></script>
   <script src="/assets/js/todo-datepicker.js"></script>
 </body>
   <script>

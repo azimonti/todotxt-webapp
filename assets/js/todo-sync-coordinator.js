@@ -11,22 +11,6 @@ let syncDebounceTimer = null;
 const SYNC_DEBOUNCE_DELAY = 3000; // 3 seconds delay before syncing after local change
 
 /**
- * Simple debounce utility.
- * @param {Function} func - The function to debounce.
- * @param {number} delay - The debounce delay in milliseconds.
- * @returns {Function} - The debounced function.
- */
-function debounce(func, delay) {
-  let timeoutId;
-  return function(...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-}
-
-/**
  * Performs the core sync logic for the currently active file:
  * compares local and remote timestamps and handles conflicts.
  * This function replaces the old syncWithDropbox in api.js.
@@ -85,12 +69,12 @@ export async function coordinateSync() {
         // Call the refactored upload function (needs content)
         const uploadSuccess = await uploadTodosToDropbox(activeFilePath, todoFileContent);
         if (uploadSuccess) {
-            setLastSyncTime(activeFilePath);
-            clearUploadPending(activeFilePath);
-            finalStatus = SyncStatus.IDLE;
+          setLastSyncTime(activeFilePath);
+          clearUploadPending(activeFilePath);
+          finalStatus = SyncStatus.IDLE;
         } else {
-            finalStatus = SyncStatus.ERROR; // uploadTodosToDropbox should handle specific error UI
-            errorMessage = `Failed initial upload for ${activeFilePath}`;
+          finalStatus = SyncStatus.ERROR; // uploadTodosToDropbox should handle specific error UI
+          errorMessage = `Failed initial upload for ${activeFilePath}`;
         }
       } else {
         logVerbose(`Sync Status for ${activeFilePath}: No file/metadata on Dropbox and no local data. Nothing to sync.`);
@@ -129,71 +113,71 @@ export async function coordinateSync() {
         logVerbose(`Sync Status for ${activeFilePath}: Dropbox file is newer than local. Conflict or simple update needed.`);
         // Check if local changes are pending upload (meaning we edited offline/recently)
         if (isUploadPending(activeFilePath)) {
-            logVerbose(`Conflict detected for ${activeFilePath}: Dropbox is newer, but local changes are pending.`);
-            // CONFLICT RESOLUTION
-            try {
-              const userChoice = await showConflictModal(localDate, dropboxDate, activeFilePath);
-              logVerbose(`Conflict resolved by user for ${activeFilePath}: Keep '${userChoice}'`);
+          logVerbose(`Conflict detected for ${activeFilePath}: Dropbox is newer, but local changes are pending.`);
+          // CONFLICT RESOLUTION
+          try {
+            const userChoice = await showConflictModal(localDate, dropboxDate, activeFilePath);
+            logVerbose(`Conflict resolved by user for ${activeFilePath}: Keep '${userChoice}'`);
 
-              if (userChoice === 'local') {
-                // User chose local: Upload local version
-                logVerbose(`User chose local for ${activeFilePath}. Uploading local version...`);
-                const todos = getTodosFromStorage();
-                const todoFileContent = todos.map(todo => todo.text).join('\n');
-                const uploadSuccess = await uploadTodosToDropbox(activeFilePath, todoFileContent);
-                 if (uploadSuccess) {
-                    setLastSyncTime(activeFilePath);
-                    clearUploadPending(activeFilePath);
-                    finalStatus = SyncStatus.IDLE;
-                } else {
-                    finalStatus = SyncStatus.ERROR;
-                    errorMessage = `Failed upload after conflict (local chosen) for ${activeFilePath}`;
-                }
-              } else if (userChoice === 'dropbox') {
-                // User chose Dropbox: Download Dropbox version
-                logVerbose(`User chose Dropbox for ${activeFilePath}. Downloading Dropbox version...`);
-                updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
-                const downloadResult = await downloadTodosFromDropbox(activeFilePath);
-                if (downloadResult && downloadResult.content !== null) {
-                  saveTodosFromText(downloadResult.content);
-                  setLastSyncTime(activeFilePath);
-                  loadTodos($('#todo-list'));
-                  logVerbose(`Local storage overwritten with Dropbox content for ${activeFilePath}.`);
-                  finalStatus = SyncStatus.IDLE;
-                  clearUploadPending(activeFilePath); // Important: clear flag after resolving with Dropbox version
-                } else {
-                  console.error(`Failed to download Dropbox content for ${activeFilePath} after conflict resolution.`);
-                  alert(`Error: Could not download the selected Dropbox version for ${activeFilePath}.`);
-                  finalStatus = SyncStatus.ERROR;
-                  errorMessage = `Failed download ${activeFilePath} after conflict`;
-                }
-              } else {
-                logVerbose(`Conflict resolution cancelled for ${activeFilePath}. No sync action taken.`);
-                finalStatus = SyncStatus.IDLE; // Revert to idle, but leave pending flag? Or clear? Let's clear.
+            if (userChoice === 'local') {
+              // User chose local: Upload local version
+              logVerbose(`User chose local for ${activeFilePath}. Uploading local version...`);
+              const todos = getTodosFromStorage();
+              const todoFileContent = todos.map(todo => todo.text).join('\n');
+              const uploadSuccess = await uploadTodosToDropbox(activeFilePath, todoFileContent);
+              if (uploadSuccess) {
+                setLastSyncTime(activeFilePath);
                 clearUploadPending(activeFilePath);
+                finalStatus = SyncStatus.IDLE;
+              } else {
+                finalStatus = SyncStatus.ERROR;
+                errorMessage = `Failed upload after conflict (local chosen) for ${activeFilePath}`;
               }
-            } catch (error) {
-              console.error(`Error during conflict resolution for ${activeFilePath}:`, error);
-              alert(`An error occurred during sync conflict resolution for ${activeFilePath}.`);
-              finalStatus = SyncStatus.ERROR;
-              errorMessage = `Conflict resolution error for ${activeFilePath}`;
-            }
-        } else {
-            // Dropbox is newer, and no local changes pending -> Safe to just download
-            logVerbose(`Sync Status for ${activeFilePath}: Dropbox is newer, no pending local changes. Downloading.`);
-            updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
-            const downloadResult = await downloadTodosFromDropbox(activeFilePath);
-            if (downloadResult && downloadResult.content !== null) {
-              saveTodosFromText(downloadResult.content);
-              setLastSyncTime(activeFilePath);
-              loadTodos($('#todo-list'));
-              logVerbose(`Local storage updated with newer Dropbox content for ${activeFilePath}.`);
-              finalStatus = SyncStatus.IDLE;
+            } else if (userChoice === 'dropbox') {
+              // User chose Dropbox: Download Dropbox version
+              logVerbose(`User chose Dropbox for ${activeFilePath}. Downloading Dropbox version...`);
+              updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
+              const downloadResult = await downloadTodosFromDropbox(activeFilePath);
+              if (downloadResult && downloadResult.content !== null) {
+                saveTodosFromText(downloadResult.content);
+                setLastSyncTime(activeFilePath);
+                loadTodos($('#todo-list'));
+                logVerbose(`Local storage overwritten with Dropbox content for ${activeFilePath}.`);
+                finalStatus = SyncStatus.IDLE;
+                clearUploadPending(activeFilePath); // Important: clear flag after resolving with Dropbox version
+              } else {
+                console.error(`Failed to download Dropbox content for ${activeFilePath} after conflict resolution.`);
+                alert(`Error: Could not download the selected Dropbox version for ${activeFilePath}.`);
+                finalStatus = SyncStatus.ERROR;
+                errorMessage = `Failed download ${activeFilePath} after conflict`;
+              }
             } else {
-              console.error(`Failed to download newer Dropbox content for ${activeFilePath}.`);
-              finalStatus = SyncStatus.ERROR;
-              errorMessage = `Failed download of newer version for ${activeFilePath}`;
+              logVerbose(`Conflict resolution cancelled for ${activeFilePath}. No sync action taken.`);
+              finalStatus = SyncStatus.IDLE; // Revert to idle, but leave pending flag? Or clear? Let's clear.
+              clearUploadPending(activeFilePath);
             }
+          } catch (error) {
+            console.error(`Error during conflict resolution for ${activeFilePath}:`, error);
+            alert(`An error occurred during sync conflict resolution for ${activeFilePath}.`);
+            finalStatus = SyncStatus.ERROR;
+            errorMessage = `Conflict resolution error for ${activeFilePath}`;
+          }
+        } else {
+          // Dropbox is newer, and no local changes pending -> Safe to just download
+          logVerbose(`Sync Status for ${activeFilePath}: Dropbox is newer, no pending local changes. Downloading.`);
+          updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
+          const downloadResult = await downloadTodosFromDropbox(activeFilePath);
+          if (downloadResult && downloadResult.content !== null) {
+            saveTodosFromText(downloadResult.content);
+            setLastSyncTime(activeFilePath);
+            loadTodos($('#todo-list'));
+            logVerbose(`Local storage updated with newer Dropbox content for ${activeFilePath}.`);
+            finalStatus = SyncStatus.IDLE;
+          } else {
+            console.error(`Failed to download newer Dropbox content for ${activeFilePath}.`);
+            finalStatus = SyncStatus.ERROR;
+            errorMessage = `Failed download of newer version for ${activeFilePath}`;
+          }
         }
       } else { // localDate > dropboxDate
         logVerbose(`Sync Status for ${activeFilePath}: Local changes are newer than Dropbox. Uploading.`);
@@ -201,12 +185,12 @@ export async function coordinateSync() {
         const todoFileContent = todos.map(todo => todo.text).join('\n');
         const uploadSuccess = await uploadTodosToDropbox(activeFilePath, todoFileContent);
         if (uploadSuccess) {
-            setLastSyncTime(activeFilePath);
-            clearUploadPending(activeFilePath);
-            finalStatus = SyncStatus.IDLE;
+          setLastSyncTime(activeFilePath);
+          clearUploadPending(activeFilePath);
+          finalStatus = SyncStatus.IDLE;
         } else {
-            finalStatus = SyncStatus.ERROR;
-            errorMessage = `Failed upload of newer local version for ${activeFilePath}`;
+          finalStatus = SyncStatus.ERROR;
+          errorMessage = `Failed upload of newer local version for ${activeFilePath}`;
         }
       }
     }
@@ -219,9 +203,9 @@ export async function coordinateSync() {
     // Update indicator based on the final status, unless it's already NOT_CONNECTED
     const currentDbx = getDbxInstance();
     if (currentDbx) { // Only update if we think we are connected
-        updateSyncIndicator(finalStatus, errorMessage, activeFilePath);
+      updateSyncIndicator(finalStatus, errorMessage, activeFilePath);
     } else {
-        updateSyncIndicator(SyncStatus.NOT_CONNECTED, '', null); // Ensure it shows disconnected
+      updateSyncIndicator(SyncStatus.NOT_CONNECTED, '', null); // Ensure it shows disconnected
     }
   }
 }
@@ -232,7 +216,7 @@ export async function coordinateSync() {
  * @param {CustomEvent} event - The event object.
  */
 function handleLocalDataChange(event) {
-  const { filePath, timestamp } = event.detail;
+  const { filePath } = event.detail;
   const activeFilePath = getActiveFile();
 
   // Only trigger sync if the change was for the currently active file
@@ -241,8 +225,8 @@ function handleLocalDataChange(event) {
 
     // Set pending flag immediately if offline
     if (!navigator.onLine) {
-        warnVerbose(`Offline: Setting upload pending flag for ${activeFilePath} due to local change.`);
-        setUploadPending(activeFilePath);
+      warnVerbose(`Offline: Setting upload pending flag for ${activeFilePath} due to local change.`);
+      setUploadPending(activeFilePath);
     }
 
     // Clear previous debounce timer and start a new one

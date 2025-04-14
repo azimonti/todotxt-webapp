@@ -41,7 +41,7 @@ export function setUploadPending(filePath) {
   localStorage.setItem(key, 'true');
   // Update UI only if this is the active file
   if (filePath === getActiveFile()) {
-      updateSyncIndicator(SyncStatus.PENDING, '', filePath);
+    updateSyncIndicator(SyncStatus.PENDING, '', filePath);
   }
 }
 
@@ -80,7 +80,7 @@ async function handleOnlineStatus() {
 
     // Dynamically import and call the coordinator's sync function
     try {
-      const { coordinateSync } = await import('../sync-coordinator.js');
+      const { coordinateSync } = await import('../todo-sync-coordinator.js');
       await coordinateSync(); // Attempt sync for the active file
       // coordinateSync will handle the final status update (IDLE or ERROR)
     } catch (err) {

@@ -37,7 +37,7 @@ export function updateSyncIndicator(status, message = '', filePath = null) {
   let title = 'Sync Status'; // Default title
 
   switch (status) {
-  case SyncStatus.IDLE:
+  case SyncStatus.IDLE: { // Add block scope
     iconClass = 'fa-solid fa-check text-success';
     text = ''; // or 'Synced'
     // Get last sync time for the relevant file
@@ -55,6 +55,7 @@ export function updateSyncIndicator(status, message = '', filePath = null) {
     const fileName = relevantFilePath.substring(relevantFilePath.lastIndexOf('/') + 1);
     title = `File: ${fileName}\nLast Sync: ${syncTimeStr}`;
     break;
+  } // Close block scope
   case SyncStatus.SYNCING:
     iconClass = 'fa-solid fa-rotate text-primary';
     text = 'Syncing...';
@@ -128,10 +129,10 @@ export function showConflictModal(localDate, dropboxDate, filePath) { // Added f
   if (localTimeSpan) localTimeSpan.textContent = localDate ? localDate.toLocaleString() : 'N/A';
   if (dropboxTimeSpan) dropboxTimeSpan.textContent = dropboxDate ? dropboxDate.toLocaleString() : 'N/A';
   if (fileNameSpan && filePath) {
-      // Extract file name from path
-      fileNameSpan.textContent = filePath.substring(filePath.lastIndexOf('/') + 1);
+    // Extract file name from path
+    fileNameSpan.textContent = filePath.substring(filePath.lastIndexOf('/') + 1);
   } else if (fileNameSpan) {
-      fileNameSpan.textContent = 'Unknown File'; // Fallback
+    fileNameSpan.textContent = 'Unknown File'; // Fallback
   }
 
 
