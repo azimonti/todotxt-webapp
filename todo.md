@@ -19,7 +19,7 @@
   - [x] 2025-04-13 (B) 2025-04-13 Implement "Delete File" logic: Confirm deletion, delete file on Dropbox, remove from local list, switch to another file (e.g., default or first). @dropbox @ui @localstorage
   - [x] 2025-04-13 (C) 2025-04-13 Update sync logic (`dropbox-sync.js`) to operate only on the currently active file. @sync @dropbox
   - [x] 2025-04-13 (C) 2025-04-13 Ensure conflict detection and resolution works on a per-file basis. @sync @conflict
-  - [ ] (C) 2025-04-13 Update UI indicators (sync status, last sync time) to reflect the active file. @ui @sync
+  - [x] 2025-04-13 (C) 2025-04-13 Update UI indicators (sync status, last sync time) to reflect the active file. @ui @sync
   - [x] 2025-04-13 (B) 2025-04-13 Modify initial load logic to load the last active file or a default file. @localstorage @load
-  - [ ] (C) 2025-04-12 Refactor storage logic for clarity (local vs. Dropbox) @refactor @localstorage
+  - [x] 2025-04-14 (C) 2025-04-12 Refactor storage logic for clarity (local vs. Dropbox) @refactor @localstorage
   - [x] 2025-04-13 (A) 2025-04-13 Replace file sidebar with an offcanvas for file management @ui @refactor

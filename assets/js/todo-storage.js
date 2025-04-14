@@ -1,6 +1,5 @@
 'use strict';
 
-import { uploadTodosToDropbox } from './dropbox-sync.js'; // Import the upload function - Will need modification later
 import { logVerbose, warnVerbose } from './todo-logging.js'; // Import logging functions
 
 // --- Constants ---
@@ -114,9 +113,54 @@ export function renameKnownFile(oldPath, newName, newPath) {
       warnVerbose(`File with new path "${newPath}" already exists.`);
       return false; // Prevent renaming to an existing path
   }
+  // --- Move associated data in localStorage ---
+  const oldTodoKey = getDynamicStorageKey('todos_', oldPath);
+  const newTodoKey = getDynamicStorageKey('todos_', newPath);
+  const oldLocalModKey = getDynamicStorageKey('todosLastModifiedLocal_', oldPath);
+  const newLocalModKey = getDynamicStorageKey('todosLastModifiedLocal_', newPath);
+  const oldSyncTimeKey = getDynamicStorageKey('lastSyncTime_', oldPath);
+  const newSyncTimeKey = getDynamicStorageKey('lastSyncTime_', newPath);
+
+  let dataMoved = false;
+  if (oldTodoKey && newTodoKey) {
+    const todosData = localStorage.getItem(oldTodoKey);
+    if (todosData) {
+      localStorage.setItem(newTodoKey, todosData);
+      localStorage.removeItem(oldTodoKey);
+      logVerbose(`Moved todo data from ${oldTodoKey} to ${newTodoKey}`);
+      dataMoved = true; // Mark that main data was moved
+
+      // Move timestamps only if main data was moved successfully
+      const localModTimestamp = localStorage.getItem(oldLocalModKey);
+      if (localModTimestamp && newLocalModKey) {
+        localStorage.setItem(newLocalModKey, localModTimestamp);
+        localStorage.removeItem(oldLocalModKey);
+        logVerbose(`Moved local modified timestamp for ${oldPath} to ${newPath}`);
+      }
+      const syncTimestamp = localStorage.getItem(oldSyncTimeKey);
+      if (syncTimestamp && newSyncTimeKey) {
+        localStorage.setItem(newSyncTimeKey, syncTimestamp);
+        localStorage.removeItem(oldSyncTimeKey);
+        logVerbose(`Moved last sync timestamp for ${oldPath} to ${newPath}`);
+      }
+    } else {
+      warnVerbose(`No todo data found for ${oldPath} to move during rename.`);
+      // Ensure old keys are removed even if no data existed
+      if (oldLocalModKey) localStorage.removeItem(oldLocalModKey);
+      if (oldSyncTimeKey) localStorage.removeItem(oldSyncTimeKey);
+    }
+  } else {
+    console.error(`Failed to generate storage keys during rename from ${oldPath} to ${newPath}. Data not moved.`);
+    // Don't proceed with saving the known file rename if keys failed? Or proceed carefully?
+    // Let's proceed with the known file rename but log the error.
+  }
+  // --- End data move ---
+
+
+  // Update the known files list entry
   files[index].name = newName;
   files[index].path = newPath;
-  saveKnownFiles(files);
+  saveKnownFiles(files); // Save the updated list
 
   // If the renamed file was the active one, update the active file path
   if (getActiveFile() === oldPath) {
@@ -215,9 +259,19 @@ export function saveTodosToStorage(todoObjects) {
   }
 
   localStorage.setItem(storageKey, JSON.stringify(todoObjects));
+  const saveTimestamp = new Date().toISOString();
   // Store the current timestamp for the specific file
-  localStorage.setItem(timestampKey, new Date().toISOString());
+  localStorage.setItem(timestampKey, saveTimestamp);
   // console.log(`Saved todos and timestamp for ${activeFilePath}`);
+
+  // Dispatch an event indicating data has changed for the active file
+  document.dispatchEvent(new CustomEvent('localDataChanged', {
+    detail: {
+      filePath: activeFilePath,
+      timestamp: saveTimestamp // Include timestamp for potential use by listener
+    }
+  }));
+  logVerbose(`Dispatched localDataChanged event for ${activeFilePath}`);
 }
 
 /**
@@ -231,6 +285,35 @@ export function getLocalLastModified() {
   return localStorage.getItem(timestampKey);
 }
 
+// --- Last Sync Time Storage (Per-File) ---
+
+/**
+ * Stores the timestamp of the last successful sync operation for a specific file.
+ * @param {string} filePath - The path of the file that was synced.
+ */
+export function setLastSyncTime(filePath) {
+  const timestampKey = getDynamicStorageKey('lastSyncTime_', filePath);
+  if (!timestampKey) {
+    console.error("Cannot set last sync time, failed to generate storage key for path:", filePath);
+    return;
+  }
+  const now = new Date().toISOString();
+  localStorage.setItem(timestampKey, now);
+  logVerbose(`Last sync time set for ${filePath}: ${now}`);
+}
+
+/**
+ * Retrieves the timestamp of the last successful sync operation for a specific file.
+ * @param {string} filePath - The path of the file to check.
+ * @returns {string | null} ISO 8601 timestamp string or null if not set.
+ */
+export function getLastSyncTime(filePath) {
+  const timestampKey = getDynamicStorageKey('lastSyncTime_', filePath);
+  if (!timestampKey) return null;
+  return localStorage.getItem(timestampKey);
+}
+
+
 // --- Todo Modification Functions (Operating on Active File) ---
 
 export function addTodoToStorage(item) {
@@ -241,11 +324,7 @@ export function addTodoToStorage(item) {
     text: item.toString() // Assuming item is a TodoTxtItem object or similar
   };
   todos.push(newTodoObject);
-  saveTodosToStorage(todos); // Saves todos for the active file
-  // Pass the active file path to the upload function
-  // Note: This will attempt upload even if offline, potentially showing errors.
-  // Consider adding an online check before calling uploadTodosToDropbox.
-  uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after add failed:", err)); // Trigger upload for the active file
+  saveTodosToStorage(todos); // Saves todos for the active file and dispatches event
 }
 
 export function updateTodoInStorage(idToUpdate, newItem) {
@@ -254,11 +333,7 @@ export function updateTodoInStorage(idToUpdate, newItem) {
   const index = todos.findIndex(todo => todo.id === idToUpdate);
   if (index > -1) {
     todos[index].text = newItem.toString(); // Assuming newItem is a TodoTxtItem object or similar
-    saveTodosToStorage(todos); // Saves todos for the active file
-    // Pass the active file path to the upload function
-    // Note: This will attempt upload even if offline, potentially showing errors.
-    // Consider adding an online check before calling uploadTodosToDropbox.
-    uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after update failed:", err)); // Trigger upload for the active file
+    saveTodosToStorage(todos); // Saves todos for the active file and dispatches event
   } else {
     warnVerbose(`Could not find todo with ID "${idToUpdate}" in active file "${getActiveFile()}" to update.`);
   }
@@ -270,11 +345,7 @@ export function removeTodoFromStorage(idToDelete) {
   const initialLength = todos.length;
   todos = todos.filter(todo => todo.id !== idToDelete);
   if (todos.length < initialLength) {
-    saveTodosToStorage(todos); // Saves todos for the active file
-    // Pass the active file path to the upload function
-    // Note: This will attempt upload even if offline, potentially showing errors.
-    // Consider adding an online check before calling uploadTodosToDropbox.
-    uploadTodosToDropbox(getActiveFile()).catch(err => console.error("Upload after delete failed:", err)); // Trigger upload for the active file
+    saveTodosToStorage(todos); // Saves todos for the active file and dispatches event
   } else {
     warnVerbose(`Could not find todo with ID "${idToDelete}" in active file "${getActiveFile()}" to delete.`);
   }

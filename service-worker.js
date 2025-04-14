@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todotxt-cache-v1-0-1'; // Updated cache version
+const CACHE_NAME = 'todotxt-cache-v1-0-2'; // Incremented cache version
 const CACHE_AT_ONCE = false;
 const assetsToCache = [
   '/index.html',
@@ -31,6 +31,7 @@ const assetsToCache = [
   '/assets/js/todo-datepicker.js',
   '/assets/js/todo-dropdowns.js',
   '/assets/js/todo-event-handlers.js',
+  '/assets/js/todo-files.js', // Added missing file
   '/assets/js/todo-import.js',
   '/assets/js/todo-list-display.js',
   '/assets/js/todo-load.js',
@@ -41,6 +42,7 @@ const assetsToCache = [
   '/assets/js/todo.js',
 
   '/assets/js/dropbox-sync.js',
+  '/assets/js/sync-coordinator.js', // Added new coordinator file
   '/assets/js/dropbox/config.js',
   '/assets/js/dropbox/ui.js',
   '/assets/js/dropbox/auth.js',

@@ -162,7 +162,8 @@
           <h5 class="modal-title" id="conflictModalLabel">Sync Conflict Detected</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>The version of your todo list on Dropbox is newer than your local version.</p>
+          <p>A conflict was detected for file: <strong id="conflictFileName"></strong></p> <!-- Added file name display -->
+          <p>The version on Dropbox is newer than your last saved local version.</p>
           <p>Which version would you like to keep?</p>
           <p><strong>Local Last Saved:</strong> <span id="localConflictTime"></span><br>
           <strong>Dropbox Last Saved:</strong> <span id="dropboxConflictTime"></span></p><!-- Optional: Add text areas here later to show previews -->

@@ -189,50 +189,54 @@ export function setupRenameFileModalListeners() {
         }
 
 
-        // --- Modified Rename Logic (Prioritize Local) ---
-        let dropboxRenameAttempted = false;
-        let dropboxRenameSuccess = false;
-
+        // --- Refined Rename Logic (Local First) ---
         try {
-            // 1. Attempt Dropbox rename (optional)
-            try {
-                const { renameDropboxFile: apiRename } = await import('./dropbox/api.js');
-                logVerbose(`Attempting Dropbox rename for ${oldFilePath} to ${newFilePath}...`);
-                dropboxRenameAttempted = true;
-                dropboxRenameSuccess = await apiRename(oldFilePath, newFilePath);
-                if (dropboxRenameSuccess) {
-                    logVerbose(`Dropbox rename successful.`);
-                } else {
-                    logVerbose(`Dropbox rename failed or was not possible.`);
-                }
-            } catch (dropboxError) {
-                console.error(`Error during Dropbox rename attempt:`, dropboxError);
-                logVerbose(`Dropbox rename attempt failed.`);
-            }
-
-            // 2. Always perform local rename
-            logVerbose(`Proceeding with local rename for ${oldFilePath} to ${newFilePath}`);
+            // 1. Perform local rename first (includes moving data)
+            logVerbose(`Attempting local rename for ${oldFilePath} to ${newFilePath}`);
             const localRenameSuccess = renameKnownFile(oldFilePath, cleanNewName, newFilePath);
 
             if (localRenameSuccess) {
-                // 3. Update UI
-                updateFileSelectionUI();
-                logVerbose(`File successfully renamed locally to "${cleanNewName}".`);
+                logVerbose(`Local rename successful. Updating UI...`);
+                // 2. Update UI immediately after local success
+                updateFileSelectionUI(); // Reflects the new active file name
                 showNotification(`File renamed locally to "${cleanNewName}".`, 'success');
-                // Add warning if Dropbox failed
-                if (dropboxRenameAttempted && !dropboxRenameSuccess) {
-                    showNotification(`Note: Could not rename file on Dropbox.`, 'warning');
+
+                // 3. Attempt Dropbox rename *after* local success
+                try {
+                    const { renameDropboxFile: apiRename } = await import('./dropbox/api.js');
+                    logVerbose(`Attempting Dropbox rename for ${oldFilePath} to ${newFilePath}...`);
+                    // Corrected variable name from newPath to newFilePath
+                    const dropboxRenameSuccess = await apiRename(oldFilePath, newFilePath);
+
+                    if (dropboxRenameSuccess) {
+                        logVerbose(`Dropbox rename successful.`);
+                        // Optional: Update sync status for the new file path?
+                        // Maybe trigger a sync check for the new path?
+                    } else {
+                        logVerbose(`Dropbox rename failed or was not possible.`);
+                        // Notify user that Dropbox rename failed but local succeeded
+                        showNotification(`Note: Could not rename file on Dropbox. Local file is now "${cleanNewName}".`, 'warning');
+                        // Consider triggering an upload under the new name to ensure content exists on Dropbox
+                        // const { uploadTodosToDropbox } = await import('./dropbox/api.js');
+                        // uploadTodosToDropbox(newPath).catch(e => console.error("Upload after failed rename failed:", e));
+                    }
+                } catch (dropboxError) {
+                    console.error(`Error during Dropbox rename attempt:`, dropboxError);
+                    logVerbose(`Dropbox rename attempt failed.`);
+                    showNotification(`Error trying to rename file on Dropbox. Local file is now "${cleanNewName}".`, 'warning');
                 }
+
             } else {
+                // Local rename failed, do not attempt Dropbox rename
                 logVerbose(`Local rename failed for "${oldFilePath}" to "${newFilePath}".`);
                 showNotification(`Failed to rename file locally. Check console for details.`, 'alert');
             }
 
         } catch (error) { // Catch errors during local rename or UI update
-            console.error(`Error during local rename or UI update:`, error);
+            console.error(`Error during file rename process:`, error);
             showNotification(`Failed to complete file rename process. Check console for details.`, 'alert');
         }
-        // --- End Modified Rename Logic ---
+        // --- End Refined Rename Logic ---
     });
      logVerbose('Rename File modal listeners attached.');
 }

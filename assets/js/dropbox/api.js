@@ -1,12 +1,9 @@
 /* global Dropbox */ // Inform linter about globals
 // import { TODO_FILENAME  } from './config.js'; // No longer needed, use dynamic paths
 import { logVerbose, warnVerbose } from '../todo-logging.js';
-import { updateSyncIndicator, showConflictModal, SyncStatus } from './ui.js';
-import { setUploadPending, clearUploadPending } from './offline.js';
-// Import function to get the active file path
-import { getActiveFile } from '../todo-storage.js';
-// Note: We dynamically import todo-storage.js and todo-load.js within functions
-// to avoid circular dependencies and ensure they are loaded when needed.
+// Removed imports for ui, offline, todo-storage, todo-load as they are handled by coordinator
+// Keep auth import for logout on error
+// import { logoutFromDropbox } from './auth.js'; // Import dynamically later if needed
 
 let dbx = null; // The main Dropbox API object instance
 
@@ -25,7 +22,7 @@ export async function initializeDropboxApi(token) {
 
   if (typeof Dropbox === 'undefined') {
     console.error('Dropbox SDK not loaded, cannot initialize API.');
-    updateSyncIndicator(SyncStatus.ERROR, 'Dropbox SDK failed to load');
+    // updateSyncIndicator(SyncStatus.ERROR, 'Dropbox SDK failed to load'); // Coordinator handles UI
     return;
   }
 
@@ -39,13 +36,29 @@ export async function initializeDropboxApi(token) {
     dbx = new Dropbox.Dropbox({ accessToken: token });
     logVerbose('Dropbox API initialized successfully.');
 
-    // Trigger initial sync check after API is ready
-    await syncWithDropbox();
+    // Trigger initial sync check via the coordinator (needs to be called from auth/init)
+    // Dynamically import and call the coordinator's sync function
+    // This assumes initializeDropboxApi is called *after* coordinator is initialized
+    try {
+        const { coordinateSync } = await import('../sync-coordinator.js');
+        await coordinateSync();
+    } catch (coordError) {
+        console.error("Failed to trigger initial sync via coordinator:", coordError);
+    }
+
   } catch (error) {
     console.error('Error initializing Dropbox API object:', error);
-    updateSyncIndicator(SyncStatus.ERROR, 'Failed to initialize Dropbox API');
+    // updateSyncIndicator(SyncStatus.ERROR, 'Failed to initialize Dropbox API'); // Coordinator handles UI
     dbx = null; // Ensure dbx is null if initialization failed
   }
+}
+
+/**
+ * Returns the initialized Dropbox API instance.
+ * @returns {Dropbox | null} The Dropbox instance or null if not initialized.
+ */
+export function getDbxInstance() { // Added export
+  return dbx;
 }
 
 /**
@@ -76,30 +89,42 @@ export async function getDropboxFileMetadata(filePath) {
     }
     // Log the full error object for more details
     console.error(`Full error object fetching metadata for ${filePath}:`, error);
-    console.error(`Error fetching metadata for ${filePath} from Dropbox:`, error?.error?.error_summary || error);
-    // Don't alert here, let caller handle UI feedback
-    return null; // Return null on other errors
+    const errorSummary = error?.error?.error_summary || String(error);
+    console.error(`Error fetching metadata for ${filePath} from Dropbox:`, errorSummary);
+
+    // Check for invalid access token error using the specific error tag or summary string
+    const isInvalidToken = error?.error?.['.tag'] === 'invalid_access_token' || errorSummary.includes('invalid_access_token');
+    if (isInvalidToken) {
+      console.warn(`Invalid access token detected while fetching metadata for ${filePath}. Logging out.`);
+      // Dynamically import logout function
+      const { logoutFromDropbox } = await import('./auth.js');
+      logoutFromDropbox();
+      // updateSyncIndicator(SyncStatus.NOT_CONNECTED, null, null); // Coordinator handles UI
+      // alert('Dropbox connection error: Your session has expired. Please reconnect.'); // Coordinator handles UI
+    }
+    // Return null, let caller (coordinator) handle UI feedback
+    return null; // Return null on errors
   }
 }
 
 /**
  * Downloads a specific todo list file from Dropbox.
  * @param {string} filePath - The full path of the file on Dropbox (e.g., '/todo.txt').
- * @returns {Promise<string|null>} A promise that resolves with the file content as a string, or null if an error occurs or the file doesn't exist.
+ * @returns {Promise<{success: boolean, content: string | null}>} A promise resolving with success status and content, or null content on failure/not found.
  */
 export async function downloadTodosFromDropbox(filePath) {
   if (!dbx) {
     warnVerbose('Dropbox API not initialized. Cannot download.');
-    return null;
+    return { success: false, content: null };
   }
    if (!filePath) {
     console.error('downloadTodosFromDropbox called without filePath.');
-    return null;
+    return { success: false, content: null };
   }
 
   try {
     logVerbose(`Downloading ${filePath} from Dropbox...`);
-    updateSyncIndicator(SyncStatus.SYNCING); // Indicate download activity
+    // updateSyncIndicator(SyncStatus.SYNCING); // Coordinator handles UI
     const response = await dbx.filesDownload({ path: filePath });
     logVerbose(`Successfully downloaded metadata for ${filePath}:`, response);
 
@@ -108,180 +133,114 @@ export async function downloadTodosFromDropbox(filePath) {
     if (fileBlob) {
       const text = await fileBlob.text();
       logVerbose(`Downloaded content for ${filePath} (${text.length} chars).`);
-      // Don't set IDLE here, let caller decide final status
-      return text;
+      return { success: true, content: text };
     } else {
       console.warn(`Downloaded file blob is missing for ${filePath}.`);
-      updateSyncIndicator(SyncStatus.ERROR, `Downloaded ${filePath} empty`);
-      return null;
+      // updateSyncIndicator(SyncStatus.ERROR, `Downloaded ${filePath} empty`, filePath); // Coordinator handles UI
+      return { success: false, content: null };
     }
   } catch (error) {
     // Handle specific errors, e.g., file not found
     if (error?.error?.error_summary?.startsWith('path/not_found')) {
       logVerbose(`File ${filePath} not found on Dropbox. Assuming first sync.`);
-      // This is not necessarily an error state for the caller
-      return null; // Return null if file doesn't exist yet
+      return { success: true, content: null }; // Success, but no content (file doesn't exist)
     }
-    console.error(`Error downloading ${filePath} from Dropbox:`, error?.error?.error_summary || error);
-    // Don't alert here, let caller handle UI feedback
-    updateSyncIndicator(SyncStatus.ERROR, `Download ${filePath} failed`);
-    return null; // Return null on other errors
+    const errorSummary = error?.error?.error_summary || String(error);
+    console.error(`Error downloading ${filePath} from Dropbox:`, errorSummary);
+
+    // Check for invalid access token error using the specific error tag or summary string
+    const isInvalidToken = error?.error?.['.tag'] === 'invalid_access_token' || errorSummary.includes('invalid_access_token');
+    if (isInvalidToken) {
+      console.warn(`Invalid access token detected while downloading ${filePath}. Logging out.`);
+      const { logoutFromDropbox } = await import('./auth.js');
+      logoutFromDropbox();
+      // updateSyncIndicator(SyncStatus.NOT_CONNECTED, null, null); // Coordinator handles UI
+      // alert('Dropbox connection error: Your session has expired. Please reconnect.'); // Coordinator handles UI
+    } else {
+      // Update indicator only for non-auth errors during download
+      // updateSyncIndicator(SyncStatus.ERROR, `Download ${filePath} failed`, filePath); // Coordinator handles UI
+    }
+    // Return failure, let caller (coordinator) handle UI feedback
+    return { success: false, content: null };
   }
 }
 
 
 /**
- * Uploads the todo list for a specific file path from local storage to Dropbox,
- * performing a conflict check first. Handles offline status by setting a pending flag.
+ * Uploads the provided content to a specific file path on Dropbox.
+ * Handles API errors including authentication issues.
  * @param {string} filePath - The full path of the file on Dropbox (e.g., '/todo.txt').
+ * @param {string} todoFileContent - The string content to upload.
+ * @returns {Promise<boolean>} A promise resolving with true on success, false on failure.
  */
-export async function uploadTodosToDropbox(filePath) {
+export async function uploadTodosToDropbox(filePath, todoFileContent) {
   if (!filePath) {
     console.error('uploadTodosToDropbox called without filePath.');
-    updateSyncIndicator(SyncStatus.ERROR, 'Upload error: No file path');
-    return;
+    // updateSyncIndicator(SyncStatus.ERROR, 'Upload error: No file path', null); // Coordinator handles UI
+    return false; // Indicate failure
+  }
+  if (typeof todoFileContent !== 'string') {
+      console.error('uploadTodosToDropbox called without string content.');
+      return false; // Indicate failure
   }
 
-  // Check online status first
+  // Check online status first - Coordinator should ideally check before calling,
+  // but double-check here for robustness.
   if (!navigator.onLine) {
-    warnVerbose(`Application is offline. Setting pending upload flag for ${filePath}.`);
-    setUploadPending(filePath); // Pass filePath to indicate which file needs upload (offline.js needs update)
-    return; // Don't proceed with upload
+    warnVerbose(`Upload attempt for ${filePath} cancelled: Application is offline.`);
+    // Coordinator should have set pending flag already if needed.
+    return false; // Indicate failure (cannot upload offline)
   }
 
   // Check if Dropbox API is initialized
   if (!dbx) {
     warnVerbose(`Dropbox API not initialized. Cannot upload ${filePath}.`);
-    updateSyncIndicator(SyncStatus.ERROR, 'Dropbox not initialized');
-    return;
+    // updateSyncIndicator(SyncStatus.ERROR, 'Dropbox not initialized', filePath); // Coordinator handles UI
+    return false; // Indicate failure
   }
 
-  logVerbose(`Attempting to upload local changes for ${filePath} (Online)...`);
-  updateSyncIndicator(SyncStatus.SYNCING); // Show syncing status
-
-  let uploadError = null; // Track errors to update indicator
-  let statusAfterUpload = SyncStatus.IDLE; // Assume success
+  logVerbose(`Attempting to upload content to ${filePath} (Online)...`);
+  // updateSyncIndicator(SyncStatus.SYNCING, '', filePath); // Coordinator handles UI
 
   try {
-    // --- Pre-upload Conflict Check ---
-    // Dynamically import necessary functions from the main app
-    // Note: getLocalLastModified and getTodosFromStorage now work on the *active* file implicitly
-    // We need to ensure this upload function is only called for the *active* file,
-    // or modify storage functions to accept filePath if needed elsewhere.
-    // For now, assume this is called in the context of the active file.
-    const { getLocalLastModified, getTodosFromStorage } = await import('../todo-storage.js');
-    const { saveTodosFromText, loadTodos } = await import('../todo-load.js');
+    // --- Direct Upload ---
+    // Conflict checks are now handled by the coordinator before calling this.
+    logVerbose(`Uploading content (${todoFileContent.length} chars) to ${filePath} on Dropbox...`);
+    const response = await dbx.filesUpload({
+      path: filePath,
+      contents: todoFileContent,
+      mode: 'overwrite', // Overwrite the file each time
+      autorename: false, // Don't rename if conflict (overwrite handles it)
+      mute: true // Don't trigger desktop notifications for the user
+    });
+    logVerbose(`Successfully uploaded content to ${filePath} on Dropbox:`, response);
+    // setLastSyncTime(filePath); // Coordinator handles this
+    // clearUploadPending(filePath); // Coordinator handles this
+    return true; // Indicate success
+    // --- End Direct Upload ---
 
-    // Get timestamp and metadata for the specific file path
-    const localTimestampStr = getLocalLastModified(); // Gets timestamp for the *active* file
-    const dropboxMeta = await getDropboxFileMetadata(filePath); // Gets metadata for the specific file
-
-    // Check if the file being uploaded IS the active file. If not, the localTimestampStr might be wrong.
-    // This highlights a potential issue: uploadTodosToDropbox might be called for a non-active file.
-    // Let's assume for now it's only called for the active file via syncWithDropbox.
-    if (filePath !== getActiveFile()) {
-        console.warn(`uploadTodosToDropbox called for non-active file "${filePath}" but using active file's timestamp for conflict check. This might lead to incorrect behavior.`);
-        // How to handle this? Maybe getLocalLastModified should accept filePath?
-        // For now, proceed with caution.
-    }
-
-
-    const localDate = localTimestampStr ? new Date(localTimestampStr) : null;
-    // Ensure dropboxMeta is a FileMetadataReference before accessing server_modified
-    const dropboxDate = (dropboxMeta && dropboxMeta['.tag'] === 'file' && dropboxMeta.server_modified)
-      ? new Date(dropboxMeta.server_modified)
-      : null;
-
-    logVerbose(`Pre-upload Check for ${filePath} - Local Last Saved (Active File): ${localDate?.toISOString() || 'N/A'}`);
-    logVerbose(`Pre-upload Check for ${filePath} - Dropbox Last Modified: ${dropboxDate?.toISOString() || 'N/A'}`);
-
-    let proceedWithUpload = true; // Flag to control if upload happens
-
-    // If Dropbox file exists and is newer than the last local save (before this current change)
-    if (dropboxMeta && dropboxDate && localDate && dropboxDate > localDate) {
-      logVerbose(`Pre-upload Check for ${filePath}: Conflict detected! Dropbox is newer than the last saved local state.`);
-      proceedWithUpload = false; // Don't upload unless user chooses 'local'
-      // Trigger conflict resolution instead of uploading
-      try {
-        // Note: We pass the *previous* localDate for comparison in the modal
-        const userChoice = await showConflictModal(localDate, dropboxDate, filePath); // Pass filePath to modal
-        logVerbose(`Conflict resolved by user for ${filePath} during upload attempt: Keep '${userChoice}'`);
-
-        if (userChoice === 'local') {
-          // User chose local again, proceed with the upload (overwrite Dropbox)
-          logVerbose(`User confirmed keeping local for ${filePath}. Proceeding with upload...`);
-          proceedWithUpload = true; // Allow upload to happen
-        } else if (userChoice === 'dropbox') {
-          // User chose Dropbox: Download Dropbox version, overwrite local, discard current change implicitly
-          logVerbose(`User chose Dropbox for ${filePath}. Downloading Dropbox version...`);
-          updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
-          const dropboxContent = await downloadTodosFromDropbox(filePath); // Download specific file
-          if (dropboxContent !== null) {
-            // saveTodosFromText assumes active file. This is correct if conflict was for active file.
-            saveTodosFromText(dropboxContent);
-            loadTodos($('#todo-list')); // Reload UI using jQuery selector from original code
-            logVerbose(`Local storage (active file) overwritten with Dropbox content for ${filePath}.`);
-            statusAfterUpload = SyncStatus.IDLE; // Success
-            clearUploadPending(filePath); // Clear flag for this file (offline.js needs update)
-          } else {
-            console.error(`Failed to download Dropbox content for ${filePath} after conflict resolution during upload.`);
-            alert(`Error: Could not download the selected Dropbox version for ${filePath}.`);
-            statusAfterUpload = SyncStatus.ERROR; // Error
-            uploadError = new Error(`Failed download ${filePath} after conflict`);
-          }
-          // Stop the upload process as we downloaded instead
-        } else {
-          logVerbose(`Conflict resolution cancelled for ${filePath} during upload attempt.`);
-          alert(`Upload for ${filePath} cancelled due to unresolved conflict.`);
-          statusAfterUpload = SyncStatus.IDLE; // Revert to idle as no action taken
-          // TODO: Maybe revert the local change that triggered this? Complex. For now, just cancel upload.
-        }
-      } catch (error) {
-        console.error(`Error during conflict resolution for ${filePath} triggered by upload:`, error);
-        alert(`An error occurred during sync conflict resolution for ${filePath}. Upload cancelled.`);
-        statusAfterUpload = SyncStatus.ERROR; // Error
-        uploadError = error;
-        proceedWithUpload = false;
-      }
-    }
-    // --- End Pre-upload Conflict Check ---
-
-    // Proceed with upload if no conflict or user chose 'local' in conflict resolution
-    if (proceedWithUpload) {
-      logVerbose(`Proceeding with upload for ${filePath}...`);
-      // getTodosFromStorage gets todos for the *active* file.
-      // This is correct ONLY if filePath === getActiveFile().
-      // If we need to upload non-active files, getTodosFromStorage needs modification.
-      // Assuming sync logic only calls this for the active file for now.
-      const todos = getTodosFromStorage(); // Get the *current* todos for the active file
-
-      // Format todos as a plain text string, one task per line
-      const todoFileContent = todos.map(todo => todo.text).join('\n');
-
-      logVerbose(`Uploading ${todos.length} tasks to ${filePath} on Dropbox...`);
-      const response = await dbx.filesUpload({
-        path: filePath, // Use the specific file path
-        contents: todoFileContent,
-        mode: 'overwrite', // Overwrite the file each time
-        autorename: false, // Don't rename if conflict (overwrite handles it)
-        mute: true // Don't trigger desktop notifications for the user
-      });
-      logVerbose(`Successfully uploaded todos to ${filePath} on Dropbox:`, response);
-      clearUploadPending(filePath); // Clear flag for this file (offline.js needs update)
-      statusAfterUpload = SyncStatus.IDLE; // Success
-    }
   } catch (error) {
-    console.error(`Error during upload process for ${filePath}:`, error);
-    alert(`Error syncing ${filePath} with Dropbox: ${error?.error?.error_summary || error}`);
-    statusAfterUpload = SyncStatus.ERROR; // Error
-    uploadError = error;
-    // If upload fails while online, should we set pending flag to retry?
-    // For now, let's not set the flag automatically on online errors.
-  } finally {
-    // Update indicator based on the final status after all operations
-    updateSyncIndicator(statusAfterUpload, uploadError?.message || uploadError?.error?.error_summary);
+    console.error(`Error during upload API call for ${filePath}:`, error);
+    // alert(`Error syncing ${filePath} with Dropbox: ${error?.error?.error_summary || error}`); // Coordinator handles UI
+    // statusAfterUpload = SyncStatus.ERROR; // Coordinator handles UI
+    // uploadError = error; // Store error for logging/debugging if needed
+
+    // Check for invalid access token error
+    const errorSummary = error?.error?.error_summary || String(error);
+    const isInvalidToken = error?.error?.['.tag'] === 'invalid_access_token' || errorSummary.includes('invalid_access_token');
+    if (isInvalidToken) {
+      console.warn(`Invalid access token detected during upload for ${filePath}. Logging out.`);
+      const { logoutFromDropbox } = await import('./auth.js');
+      logoutFromDropbox(); // Trigger logout
+      // statusAfterUpload = SyncStatus.NOT_CONNECTED; // Coordinator handles UI
+      // errorMessage = 'Session expired. Please reconnect.'; // Coordinator handles UI
+      // alert('Dropbox connection error: Your session has expired. Please reconnect.'); // Coordinator handles UI
+    }
+    return false; // Indicate failure
   }
+  // No finally block needed to update UI here, coordinator does it based on return value.
 }
+
 
 /**
  * Renames a file on Dropbox.
@@ -324,7 +283,19 @@ export async function renameDropboxFile(oldPath, newPath) {
     } else if (error?.error?.error_summary?.includes('from_lookup/not_found')) {
         userMessage = `Failed to rename: The original file "${oldPath}" was not found.`;
     }
-    alert(userMessage); // Alert the user
+    // Check for invalid access token error using the specific error tag or summary string
+    const errorSummary = error?.error?.error_summary || String(error);
+    const isInvalidToken = error?.error?.['.tag'] === 'invalid_access_token' || errorSummary.includes('invalid_access_token');
+    if (isInvalidToken) {
+      console.warn(`Invalid access token detected during rename from ${oldPath} to ${newPath}. Logging out.`);
+      const { logoutFromDropbox } = await import('./auth.js');
+      logoutFromDropbox();
+      // updateSyncIndicator(SyncStatus.NOT_CONNECTED, null, null); // Coordinator handles UI
+      userMessage = 'Dropbox connection error: Your session has expired. Please reconnect.'; // Override message
+    }
+
+    // alert(userMessage); // Coordinator should handle UI feedback if needed
+    console.error(userMessage); // Log the error clearly
     return false;
   }
 }
@@ -360,165 +331,25 @@ export async function deleteDropboxFile(filePath) {
         userMessage = `Failed to delete: The file "${filePath}" was not found on Dropbox.`;
     }
     // Use notification instead of alert
-    if (typeof showNotification === 'function') {
-      showNotification(userMessage, 'alert');
-    } else {
-      alert(userMessage); // Fallback if notification function isn't global
+    // Check for invalid access token error using the specific error tag or summary string
+    const errorSummary = error?.error?.error_summary || String(error);
+    const isInvalidToken = error?.error?.['.tag'] === 'invalid_access_token' || errorSummary.includes('invalid_access_token');
+    if (isInvalidToken) {
+      console.warn(`Invalid access token detected during delete for ${filePath}. Logging out.`);
+      const { logoutFromDropbox } = await import('./auth.js');
+      logoutFromDropbox();
+      // updateSyncIndicator(SyncStatus.NOT_CONNECTED, null, null); // Coordinator handles UI
+      userMessage = 'Dropbox connection error: Your session has expired. Please reconnect.'; // Override message
     }
+
+    // if (typeof showNotification === 'function') { // Coordinator handles UI
+    //   showNotification(userMessage, 'alert');
+    // } else {
+    //   alert(userMessage); // Fallback if notification function isn't global
+    // }
+    console.error(userMessage); // Log the error clearly
     return false;
   }
 }
 
-
-/**
- * Performs the core sync logic for the currently active file:
- * compares local and remote timestamps and handles conflicts.
- */
-export async function syncWithDropbox() {
-  // Get the currently active file path
-  const activeFilePath = getActiveFile();
-  if (!activeFilePath) {
-    console.error("Sync failed: Could not determine active file path.");
-    updateSyncIndicator(SyncStatus.ERROR, 'Sync failed: No active file');
-    return;
-  }
-  logVerbose(`Starting sync check for active file: ${activeFilePath}`);
-
-  if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot sync.');
-    // Don't set error indicator here, maybe initial state is NOT_CONNECTED
-    return;
-  }
-  if (!navigator.onLine) {
-    warnVerbose('Cannot sync, application is offline.');
-    updateSyncIndicator(SyncStatus.OFFLINE); // Ensure indicator shows offline
-    return;
-  }
-  if (!navigator.onLine) {
-    warnVerbose(`Cannot sync ${activeFilePath}, application is offline.`);
-    updateSyncIndicator(SyncStatus.OFFLINE); // Ensure indicator shows offline
-    return;
-  }
-
-  // logVerbose('Starting Dropbox sync check...'); // Moved up
-  updateSyncIndicator(SyncStatus.SYNCING);
-  let finalStatus = SyncStatus.IDLE; // Assume success initially
-  let errorMessage = '';
-
-  try {
-    // Dynamically import necessary functions from the main app
-    // Dynamically import necessary functions from the main app
-    // getLocalLastModified now works on the active file implicitly
-    const { getLocalLastModified } = await import('../todo-storage.js');
-    const { saveTodosFromText, loadTodos } = await import('../todo-load.js');
-
-    const localTimestampStr = getLocalLastModified(); // Gets timestamp for the active file
-    const dropboxMeta = await getDropboxFileMetadata(activeFilePath); // Get metadata for the active file
-
-    const localDate = localTimestampStr ? new Date(localTimestampStr) : null;
-    // Ensure dropboxMeta is a FileMetadataReference before accessing server_modified
-    const dropboxDate = (dropboxMeta && dropboxMeta['.tag'] === 'file' && dropboxMeta.server_modified)
-      ? new Date(dropboxMeta.server_modified)
-      : null;
-
-    logVerbose(`Sync Check for ${activeFilePath} - Local Last Modified: ${localDate?.toISOString() || 'N/A'}`);
-    logVerbose(`Sync Check for ${activeFilePath} - Dropbox Last Modified: ${dropboxDate?.toISOString() || 'N/A'}`);
-
-    if (!dropboxMeta || !dropboxDate) {
-      // No file on Dropbox yet OR failed to get metadata for the active file
-      if (localDate) {
-        logVerbose(`Sync Status for ${activeFilePath}: No file/metadata on Dropbox. Uploading local version.`);
-        // Upload the active file
-        await uploadTodosToDropbox(activeFilePath); // This will set its own status
-        // Status is set within uploadTodosToDropbox's finally block
-      } else {
-        logVerbose(`Sync Status for ${activeFilePath}: No file/metadata on Dropbox and no local data. Nothing to sync.`);
-        finalStatus = SyncStatus.IDLE;
-      }
-      // No need to return here, let finally block handle the status update
-    } else if (!localDate) {
-      // No local timestamp for active file, but Dropbox file exists
-      logVerbose(`Sync Status for ${activeFilePath}: No local timestamp found. Downloading from Dropbox.`);
-      const dropboxContent = await downloadTodosFromDropbox(activeFilePath); // Download active file
-      if (dropboxContent !== null) {
-        // saveTodosFromText and loadTodos operate on the active file implicitly
-        saveTodosFromText(dropboxContent);
-        loadTodos($('#todo-list')); // Reload UI
-        logVerbose(`Local storage (active file) overwritten with Dropbox content for ${activeFilePath}.`);
-        finalStatus = SyncStatus.IDLE;
-        clearUploadPending(activeFilePath); // Clear any pending flag for this file (offline.js needs update)
-      } else {
-        console.error(`Failed to download Dropbox content for ${activeFilePath} for initial sync.`);
-        finalStatus = SyncStatus.ERROR;
-        errorMessage = `Failed initial download for ${activeFilePath}`;
-      }
-      // No need to return here, let finally block handle the status update
-    } else {
-      // Both local and Dropbox timestamps exist, compare them
-      const timeDiff = Math.abs(localDate.getTime() - dropboxDate.getTime());
-      const buffer = 2000; // 2 seconds in milliseconds
-
-      if (timeDiff <= buffer) {
-        logVerbose(`Sync Status for ${activeFilePath}: Local and Dropbox timestamps are roughly the same. No action needed.`);
-        finalStatus = SyncStatus.IDLE;
-        clearUploadPending(activeFilePath); // Ensure pending flag is clear if synced (offline.js needs update)
-      } else if (dropboxDate > localDate) {
-        logVerbose(`Sync Status for ${activeFilePath}: Dropbox file is newer than local. Showing conflict modal.`);
-        // CONFLICT DETECTED!
-        try {
-          const userChoice = await showConflictModal(localDate, dropboxDate, activeFilePath); // Pass file path
-          logVerbose(`Conflict resolved by user for ${activeFilePath}: Keep '${userChoice}'`);
-
-          if (userChoice === 'local') {
-            // User chose to keep local: Upload local version to overwrite Dropbox
-            logVerbose(`User chose local for ${activeFilePath}. Uploading local version...`);
-            await uploadTodosToDropbox(activeFilePath); // Upload active file
-            // Status is set within uploadTodosToDropbox's finally block
-          } else if (userChoice === 'dropbox') {
-            // User chose to keep Dropbox: Download Dropbox version to overwrite local
-            logVerbose(`User chose Dropbox for ${activeFilePath}. Downloading Dropbox version...`);
-            updateSyncIndicator(SyncStatus.SYNCING); // Show syncing for download
-            const dropboxContent = await downloadTodosFromDropbox(activeFilePath); // Download active file
-            // --- Start Restored Block ---
-            if (dropboxContent !== null) {
-              // saveTodosFromText and loadTodos operate on the active file implicitly
-              saveTodosFromText(dropboxContent);
-              loadTodos($('#todo-list')); // Reload UI
-              logVerbose(`Local storage (active file) overwritten with Dropbox content for ${activeFilePath}.`);
-              finalStatus = SyncStatus.IDLE;
-              clearUploadPending(activeFilePath); // Clear pending flag for this file (offline.js needs update)
-            } else {
-              console.error(`Failed to download Dropbox content for ${activeFilePath} after conflict resolution.`);
-              alert(`Error: Could not download the selected Dropbox version for ${activeFilePath}.`);
-              finalStatus = SyncStatus.ERROR;
-              errorMessage = `Failed download ${activeFilePath} after conflict`;
-            }
-          } else {
-            logVerbose(`Conflict resolution cancelled or closed without choice for ${activeFilePath}.`);
-            finalStatus = SyncStatus.IDLE; // No action taken, assume idle for now
-            // Keep pending flag if it was set? Or clear it? Let's clear it as user cancelled.
-            clearUploadPending(activeFilePath); // (offline.js needs update)
-          }
-        } catch (error) {
-          console.error(`Error during conflict resolution for ${activeFilePath}:`, error);
-          alert(`An error occurred during sync conflict resolution for ${activeFilePath}.`);
-          finalStatus = SyncStatus.ERROR;
-          errorMessage = `Conflict resolution error for ${activeFilePath}`;
-        }
-
-      } else { // localDate > dropboxDate
-        logVerbose(`Sync Status for ${activeFilePath}: Local changes are newer than Dropbox. Uploading local version.`);
-        await uploadTodosToDropbox(activeFilePath); // Upload active file
-        // Status is set within uploadTodosToDropbox's finally block
-      }
-    }
-  } catch (error) { // This catch corresponds to the main try block of syncWithDropbox
-    console.error('Error during sync check:', error);
-    finalStatus = SyncStatus.ERROR;
-    errorMessage = error.message || error?.error?.error_summary || 'Sync check failed';
-  } finally {
-    // Only update if the status wasn't already set by an internal call (like upload)
-    // Check currentSyncStatus before updating? Or just update always? Let's update always.
-    updateSyncIndicator(finalStatus, errorMessage);
-  }
-}
+// Removed syncWithDropbox function as its logic is now in sync-coordinator.js

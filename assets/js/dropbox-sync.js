@@ -1,6 +1,7 @@
 import { initializeAuthentication } from './dropbox/auth.js';
 import { initializeOfflineHandling } from './dropbox/offline.js';
-import { uploadTodosToDropbox } from './dropbox/api.js'; // Exported for external use (e.g., saving todos)
+// import { uploadTodosToDropbox } from './dropbox/api.js'; // No longer re-exporting upload
+import { initializeSyncCoordinator } from './sync-coordinator.js'; // Import coordinator initializer
 import { logVerbose } from './todo-logging.js';
 
 /**
@@ -9,22 +10,31 @@ import { logVerbose } from './todo-logging.js';
  */
 async function initializeDropboxSync() {
   logVerbose('Initializing Dropbox Sync System...');
-  // Initialize authentication first, as it might initialize the API
+
+  // Initialize the coordinator first so it's ready to listen for events
+  // and handle the initial sync triggered by auth/API initialization.
+  initializeSyncCoordinator();
+
+  // Initialize offline handling (sets initial online/offline status and listeners)
+  // It's okay to initialize this before auth, it mainly sets up listeners.
+  initializeOfflineHandling();
+
+  // Initialize authentication last, as it might trigger the initial API call and sync
   const authInitialized = await initializeAuthentication();
 
   if (authInitialized) {
-    // Initialize offline handling (sets initial online/offline status and listeners)
-    initializeOfflineHandling();
-    logVerbose('Dropbox Sync System Initialized.');
+    logVerbose('Dropbox Sync System Initialized (Auth successful).');
   } else {
-    console.error('Dropbox Sync System initialization failed due to auth issues.');
+    logVerbose('Dropbox Sync System Initialized (Auth failed or no token).');
+    // No need for an error here, it just means user isn't logged in.
   }
   // Note: The initial sync check is triggered within initializeDropboxApi
   // which is called by initializeAuthentication if a token exists or is obtained.
+  // The initial sync itself is now triggered within initializeDropboxApi -> coordinateSync
 }
 
-// Export the main initialization function and the upload function
-export { initializeDropboxSync, uploadTodosToDropbox };
+// Export only the main initialization function
+export { initializeDropboxSync };
 
 // Automatically initialize when the script is loaded as a module
 // We wrap in a DOMContentLoaded listener to ensure UI elements are ready,
