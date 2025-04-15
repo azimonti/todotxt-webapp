@@ -5,6 +5,19 @@ import { applyItemStyles, createTodoSpan } from './todo-ui.js';
 import { toggleTodoCompletion, startEditTodo, deleteTodoItem } from './todo.js';
 import { getTodosFromStorage } from './todo-storage.js';
 
+// Constants for localStorage keys (mirroring todo-switch.js)
+const SHOW_COMPLETED_KEY = 'todoWebAppShowCompleted';
+const SHOW_FUTURE_THRESHOLD_KEY = 'todoWebAppShowFutureThreshold';
+
+// Helper function to get today's date as YYYY-MM-DD
+function getTodayDateString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Main function to add a todo item to the list UI
 export function addTodoToList(sortedItemData, item, todoList) {
   const listItem = $('<li></li>')
@@ -93,11 +106,38 @@ export function loadTodos(todoList) {
     return 0; // Keep original relative order if same priority/completion
   });
 
-  // Clear the current list before adding sorted items
+  // --- Filtering based on switches ---
+  const showCompleted = localStorage.getItem(SHOW_COMPLETED_KEY) === null ? true : localStorage.getItem(SHOW_COMPLETED_KEY) === 'true';
+  const showFutureThreshold = localStorage.getItem(SHOW_FUTURE_THRESHOLD_KEY) === null ? true : localStorage.getItem(SHOW_FUTURE_THRESHOLD_KEY) === 'true';
+  const todayDateStr = getTodayDateString();
+
+  const filteredItems = itemsForSorting.filter(sortedItem => {
+    const item = sortedItem.item;
+
+    // Filter 1: Hide completed if switch is off
+    if (!showCompleted && item.complete()) {
+      return false;
+    }
+
+    // Filter 2: Hide future threshold if switch is off
+    if (!showFutureThreshold) {
+      const thresholdExtension = item.extensions().find(ext => ext.key === 't');
+      const thresholdValue = thresholdExtension ? thresholdExtension.value : undefined;
+      if (thresholdValue && thresholdValue > todayDateStr) {
+        return false;
+      }
+    }
+
+    return true; // Keep item if no filter condition met
+  });
+  // --- End Filtering ---
+
+
+  // Clear the current list before adding filtered items
   todoList.empty();
 
-  // Add sorted items to the list UI, passing the original object and parsed item
-  itemsForSorting.forEach(sortedItem => {
+  // Add filtered items to the list UI, passing the original object and parsed item
+  filteredItems.forEach(sortedItem => {
     addTodoToList(sortedItem, sortedItem.item, todoList); // Pass the object containing id/text and the parsed item
   });
 }

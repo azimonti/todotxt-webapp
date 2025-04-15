@@ -195,6 +195,11 @@ body {
   --bs-nav-link-hover-color: #006F98;
 }
 
+.form-switch .form-check-input {
+  width:42px;
+  height:24px
+}
+
 .list-group-item {
   padding:var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
 }

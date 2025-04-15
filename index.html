@@ -14,6 +14,7 @@
   <link rel="canonical" href="https://www.YOURURL.com/">
   <link rel="stylesheet" href="/assets/css/lib/bootstrap-5.3.2.min.css">
   <link rel="stylesheet" href="/assets/css/ui/datepicker.min.css">
+  <link rel="stylesheet" href="/assets/css/ui/switch.min.css">
   <link rel="stylesheet" href="/assets/css/todo.css">
   <link rel="stylesheet" href="/assets/css/notif.min.css">
   <meta name="description" content="A Progressive Web Application (PWA) for managing todo.txt tasks list.">
@@ -29,11 +30,7 @@
         </div>
         <div class="offcanvas-body">
           <div class="d-flex justify-content-end mb-2">
-            <label for="importFileDiskInput" class="btn btn-light btn-offcanvas btn-sm me-1" title="Import File from Disk">
-              <i class="fa-solid fa-upload"></i>
-            </label>
-            <input type="file" id="importFileDiskInput" accept=".txt" style="display: none;">
-            <button type="button" id="addFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Add New File"><i class="fa-solid fa-plus"></i></button>
+            <label for="importFileDiskInput" class="btn btn-light btn-offcanvas btn-sm me-1" title="Import File from Disk"><i class="fa-solid fa-upload"></i></label> <input type="file" id="importFileDiskInput" accept=".txt" style="display: none;"> <button type="button" id="addFileButton" class="btn btn-light btn-offcanvas btn-sm" title="Add New File"><i class="fa-solid fa-plus"></i></button>
           </div>
           <ul class="nav flex-column mb-2" id="fileListSidebar">
             <!-- File list will be populated by JS -->
@@ -145,6 +142,28 @@
           </div>
           <textarea class="form-control mt-2" id="importTextarea" rows="5" style="display:none;" placeholder="Paste todo items here, one per line"></textarea>
         </div>
+        <div class="row justify-content-center gx-4 mt-4">
+          <div class="col-auto">
+            <div class="text-center">
+              <div class="mb-1">
+                Show Completed
+              </div>
+              <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input switch-primary switch-with-text" type="checkbox" role="switch" id="switch1">
+              </div>
+            </div>
+          </div>
+          <div class="col-auto">
+            <div class="text-center">
+              <div class="mb-1">
+                Threshold &gt; Today
+              </div>
+              <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input switch-primary switch-with-text" type="checkbox" role="switch" id="switch2">
+              </div>
+            </div>
+          </div>
+        </div>
         <ul class="list-group jsTodoTxt todo-list" id="todo-list"></ul>
       </main>
     </div>
@@ -156,11 +175,11 @@
           <h5 class="modal-title" id="conflictModalLabel">Sync Conflict Detected</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>A conflict was detected for file: <strong id="conflictFileName"></strong></p><!-- Added file name display -->
+          <p>A conflict was detected for file: <strong id="conflictFileName"></strong></p>
           <p>The version on Dropbox is newer than your last saved local version.</p>
           <p>Which version would you like to keep?</p>
           <p><strong>Local Last Saved:</strong> <span id="localConflictTime"></span><br>
-          <strong>Dropbox Last Saved:</strong> <span id="dropboxConflictTime"></span></p><!-- Optional: Add text areas here later to show previews -->
+          <strong>Dropbox Last Saved:</strong> <span id="dropboxConflictTime"></span></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary btn-rounded" id="keepLocalButton">Keep Local (Overwrite Dropbox)</button> <button type="button" class="btn btn-complementary btn-rounded" id="keepDropboxButton">Keep Dropbox (Overwrite Local)</button>
@@ -245,6 +264,7 @@
   <script src="/assets/js/dropbox-sync.js" type="module"></script>
   <script src="/assets/js/todo.js" type="module"></script>
   <script src="/assets/js/todo-datepicker.js"></script>
+  <script src="/assets/js/todo-switch.js" type="module"></script>
 </body>
   <script>
     if ('serviceWorker' in navigator) {

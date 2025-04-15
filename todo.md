@@ -23,4 +23,5 @@
   - [x] 2025-04-13 (B) 2025-04-13 Modify initial load logic to load the last active file or a default file. @localstorage @load
   - [x] 2025-04-14 (C) 2025-04-12 Refactor storage logic for clarity (local vs. Dropbox) @refactor @localstorage
   - [x] 2025-04-13 (A) 2025-04-13 Replace file sidebar with an offcanvas for file management @ui @refactor
-  - [x] (B) 2025-04-13 Add import file from disk functionality @localstorage pri:A due:2025-04-14
+  - [x] 2025-04-13 (B) 2025-04-13 Add import file from disk functionality @localstorage
+  - [x] 2025-04-15 (B) 2025-04-15 Add switch functionality for completed and threshold @ui @localstorage

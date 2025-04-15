@@ -7,6 +7,7 @@ const assetsToCache = [
   '/assets/css/lib/bootstrap-5.3.2.min.css',
   '/assets/css/lib/bootstrap-5.3.2.min.css.map',
   '/assets/css/ui/datepicker.min.css',
+  '/assets/css/ui/switch.min.css',
   '/assets/css/notif.min.css',
   '/assets/css/todo.css',
   '/assets/js/lib/bootstrap-5.3.2.min.js',
@@ -29,6 +30,7 @@ const assetsToCache = [
   '/assets/js/cache.js',
 
   '/assets/js/todo-datepicker.js',
+  '/assets/js/todo-switch.js',
   '/assets/js/todo-dropdowns.js',
   '/assets/js/todo-event-handlers.js',
   '/assets/js/todo-files.js',
