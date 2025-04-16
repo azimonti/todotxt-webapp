@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="app-version" content="2.0.3">
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport'>
+  <link rel="icon" href="/img/icons/todotxt.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icons/todotxt-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/img/icons/todotxt-192x192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/icons/todotxt-180x180.png">
+  <meta http-equiv="content-language" content="en-us">
+  <title>Todo.txt Webapp - Help</title>
+  <link rel="manifest" href="/data/json/manifest.json">
+  <link rel="canonical" href="https://www.YOURURL.com/">
+  <link rel="stylesheet" href="/assets/css/lib/bootstrap-5.3.2.min.css">
+  <link rel="stylesheet" href="/assets/css/todo.css">
+  <meta name="description" content="Help page for the Todo.txt Webapp.">
+</head>
+<body id="page-top">
+  <div id="notif-container" class="toast-container position-fixed start-50" style="top: 15%; transform: translateX(-50%);"></div>
+  <div id="flash-container" style="display: none;"></div>
+  <div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <h1 class="h2">Help</h1><a href="/" class="btn btn-light p-1 btn-fa" title="Back to App" style="line-height: 1;"><i class="fa-solid fa-reply fs-6 align-middle" style="color: #0083B3;"></i></a>
+    </div>
+    <div id="help-content">
+      <h1>Todo.txt Webapp Help</h1>
+      <p>This document explains how to use the Todo.txt Webapp to manage your tasks.</p>
+      <h2>Understanding the Todo.txt Format</h2>
+      <p>Each line in your <code>todo.txt</code> file represents a single task. The format allows for optional components to add metadata:</p>
+      <p><strong>Basic Task:</strong></p>
+      <pre><code>Develop PWA for todo.txt</code></pre>
+      <p><strong>With Priority:</strong><br>
+      Priority is indicated by <code>(A)</code>, <code>(B)</code>, etc., at the beginning of the task body. <code>(A)</code> is the highest.</p>
+      <pre><code>(A) Develop PWA for todo.txt</code></pre>
+      <p><strong>With Creation Date:</strong><br>
+      The creation date follows the priority (if present).</p>
+      <pre><code>(A) 2025-04-01 Develop PWA for todo.txt</code></pre>
+      <p><strong>With Projects and Contexts:</strong><br>
+      Projects use <code>+ProjectName</code> and contexts use <code>@ContextName</code>.</p>
+      <pre><code>(A) 2025-04-01 Develop PWA for todo.txt @Coding +WebApp</code></pre>
+      <p><strong>With Extensions (like Due Date and Threshold Date):</strong><br>
+      Key-value pairs like <code>due:YYYY-MM-DD</code> or <code>t:YYYY-MM-DD</code> (threshold/start date) are added at the end.</p>
+      <pre><code>(A) 2025-04-01 Develop PWA for todo.txt @Coding +WebApp due:2025-10-27 t:2025-07-01</code></pre>
+      <p><strong>Completed Task:</strong><br>
+      Completed tasks start with an <code>x</code>, followed by the completion date, and then the original creation date (if it existed). Priority is usually removed upon completion.</p>
+      <pre><code>x 2025-04-13 2025-04-01 Develop PWA for todo.txt @Coding +WebApp due:2025-10-27 t:2025-07-01</code></pre>
+      <p><strong>Summary of Components:</strong></p>
+      <ul>
+        <li><strong><code>x</code></strong>: Marks the task as complete (optional).</li>
+        <li><strong><code>YYYY-MM-DD</code> (Completion Date):</strong> Date task was completed (only if marked 'x').</li>
+        <li><strong><code>(A)</code></strong>: Priority (optional, A-Z).</li>
+        <li><strong><code>YYYY-MM-DD</code> (Creation Date):</strong> Date task was created (optional).</li>
+        <li><strong>Task Description:</strong> The main text of your todo item.</li>
+        <li><strong><code>+Project</code></strong>: Project tag (optional, multiple allowed).</li>
+        <li><strong><code>@Context</code></strong>: Context tag (optional, multiple allowed).</li>
+        <li><strong><code>key:value</code></strong>: Extension tags like <code>due:</code> or <code>t:</code> (optional, multiple allowed).</li>
+      </ul>
+      <h2>Core Features</h2>
+      <h3>Adding, Editing, and Deleting Tasks</h3>
+      <ul>
+        <li>
+          <strong>Adding:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Select optional Priority, Project, Context using the dropdowns.</li>
+            <li>Select optional Creation and Due dates using the date pickers.</li>
+            <li>Type the task description in the main input field.</li>
+            <li>Click "Add Todo".</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Editing:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Click the pencil icon (<i class="fa-solid fa-pen-to-square"></i>) next to the task you want to edit.</li>
+            <li>The task details will populate the input fields and dropdowns.</li>
+            <li>Make your changes.</li>
+            <li>Click "Save Edit".</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Deleting:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Click the 'X' icon (<i class="fa-solid fa-times"></i>) next to the task you want to delete.</li>
+          </ol>
+        </li>
+      </ul>
+      <h3>Marking Tasks Complete/Incomplete</h3>
+      <ul>
+        <li>Click the checkmark icon (<i class="fa-solid fa-check"></i>) next to a task to toggle its completion status.</li>
+        <li>When a task is marked complete:
+          <ul style="list-style-type: disc; padding-left: 20px;">
+            <li>An 'x' is added to the beginning.</li>
+            <li>A completion date (today's date) is added.</li>
+            <li>Any existing priority is removed.</li>
+          </ul>
+        </li>
+        <li>When a task is marked incomplete:
+          <ul style="list-style-type: disc; padding-left: 20px;">
+            <li>The 'x' is removed.</li>
+            <li>The completion date is removed.</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Filtering Tasks</h3>
+      <ol style="list-style-type: decimal; padding-left: 20px;">
+        <li>Select a Priority, Project, or Context from the respective dropdowns above the main input field.</li>
+        <li>Click the "Filter" button.</li>
+        <li>The list will update to show only tasks matching <em>all</em> selected criteria.</li>
+        <li>To clear the filter, ensure no Priority, Project, or Context is selected in the dropdowns and click "Filter" again (or reload the page).</li>
+      </ol>
+      <h3>Display Options (Switches)</h3>
+      <p>Below the input area, there are switches to control which tasks are displayed:</p>
+      <ul>
+        <li>
+          <strong>Show Completed:</strong>
+          <ul style="list-style-type: disc; padding-left: 20px;">
+            <li><strong>ON (Default):</strong> Displays all tasks, including completed ones (marked with 'x').</li>
+            <li><strong>OFF:</strong> Hides completed tasks.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Threshold &gt; Today:</strong>
+          <ul style="list-style-type: disc; padding-left: 20px;">
+            <li><strong>ON (Default):</strong> Displays all tasks, regardless of their threshold date (<code>t:YYYY-MM-DD</code>).</li>
+            <li><strong>OFF:</strong> Hides tasks whose threshold date (<code>t:YYYY-MM-DD</code>) is in the future. This is useful for hiding tasks that aren't relevant until a later date.</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>Managing Files</h3>
+      <p>The application supports multiple <code>todo.txt</code> files synced via Dropbox.</p>
+      <ul>
+        <li><strong>Accessing File Management:</strong> Click the hamburger menu icon (<i class="fa-solid fa-bars"></i>) in the top-left corner to open the sidebar.</li>
+        <li><strong>Switching Files:</strong> Click on a file name in the sidebar list to view and edit its tasks.</li>
+        <li>
+          <strong>Adding Files:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Click the plus icon (<i class="fa-solid fa-plus"></i>) in the sidebar header.</li>
+            <li>Enter a name for the new file (e.g., <code>shopping.txt</code>). The <code>.txt</code> extension will be added if missing.</li>
+            <li>Click "Add File". A new, empty file will be created locally and on Dropbox (if connected).</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Renaming Files:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Ensure the file you want to rename is currently active.</li>
+            <li>Click the pencil icon (<i class="fa-solid fa-pen-to-square"></i>) in the sidebar footer.</li>
+            <li>Enter the new name.</li>
+            <li>Click "Rename File". The file will be renamed locally and on Dropbox. (Note: The default <code>todo.txt</code> cannot be renamed).</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Deleting Files:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Ensure the file you want to delete is currently active.</li>
+            <li>Click the 'X' icon (<i class="fa-solid fa-times"></i>) in the sidebar footer.</li>
+            <li>Confirm the deletion in the pop-up window. The file will be removed locally and from Dropbox. (Note: The default <code>todo.txt</code> cannot be deleted).</li>
+          </ol>
+        </li>
+        <li>
+          <strong>Importing from Disk:</strong>
+          <ol style="list-style-type: decimal; padding-left: 20px;">
+            <li>Click the upload icon (<i class="fa-solid fa-upload"></i>) in the sidebar header.</li>
+            <li>Select a <code>.txt</code> file from your computer. Its contents will be added to the <em>currently active</em> todo list.</li>
+          </ol>
+        </li>
+      </ul>
+      <h3>Dropbox Synchronization</h3>
+      <ul>
+        <li><strong>Connecting:</strong> Click the Dropbox icon (<i class="fa-brands fa-dropbox"></i>) in the top-right corner to connect your Dropbox account.</li>
+        <li><strong>Syncing:</strong> Once connected, the app automatically syncs the <em>currently active</em> file with Dropbox. Changes made in the app are uploaded, and changes made elsewhere are downloaded. The sync status is shown next to the Dropbox icon.</li>
+        <li><strong>Conflict Resolution:</strong> If the file has been modified both locally and on Dropbox since the last sync, a conflict resolution dialog will appear, allowing you to choose which version to keep.</li>
+        <li><strong>Offline:</strong> If you are offline, changes are saved locally and will be synced when you reconnect.</li>
+        <li><strong>Disconnecting:</strong> Click the disconnect icon (<i class="fa-solid fa-link-slash"></i>) (which replaces the Dropbox icon when connected) to log out.</li>
+      </ul>
+    </div>
+  </div>
+  <script src="/assets/js/lib/popper-2.11.8.min.js"></script>
+  <script src="/assets/js/lib/bootstrap-5.3.2.min.js"></script>
+  <script src="/assets/js/lib/fontawesome-6.7.2.min.js"></script>
+  <script src="/assets/js/lib/brands-6.7.2.min.js"></script>
+  <script src="/assets/js/lib/solid-6.7.2.min.js"></script>
+</body>
+</html>

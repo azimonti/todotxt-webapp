@@ -2,6 +2,7 @@ const CACHE_NAME = 'todotxt-cache-v1-0-2'; // Incremented cache version
 const CACHE_AT_ONCE = false;
 const assetsToCache = [
   '/index.html',
+  '/help/index.html',
   '/data/json/manifest.json',
   '/data/json/version.json',
   '/assets/css/lib/bootstrap-5.3.2.min.css',
@@ -108,7 +109,7 @@ self.addEventListener('fetch', event => {
 
   if (req.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then(res => {
+      caches.match(req).then(res => { 
         if (res) {
           return res;
         } else {
