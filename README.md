@@ -10,7 +10,6 @@ This project utilizes the [jsTodoTxt](https://github.com/jmhobbs/jsTodoTxt) libr
 
 For detailed instructions on how to use the application's features, please see the [Help](help.md).
 
-
 ![Todo.txt Webapp](screenshots/app_desktop_1_2.png)
 
 ## Usage
