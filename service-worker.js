@@ -1,4 +1,4 @@
-const CACHE_NAME = 'todotxt-cache-v1-0-2'; // Incremented cache version
+const CACHE_NAME = 'todotxt-cache-v1-0-2';
 const CACHE_AT_ONCE = false;
 const assetsToCache = [
   '/index.html',
