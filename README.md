@@ -44,18 +44,18 @@ node node-server.js --secure [--verbose]
 ```
 
 5. **Open `index.html` in your web browser:**
-Once the server is running, you can access the webapp by opening `index.html` in your browser. Typically, the server will be accessible at `http://localhost:8000`.
+Once the server is running, you can access the webapp by navigating to the server address in your browser. Typically, this will be `http://localhost:5001` or `https://localhost:8443` if using secure mode.
 
 ## Optional: Dropbox Integration
 
 If you want to enable Dropbox integration, you need to configure your Dropbox App Key in `assets/js/dropbox/config.js`.
 
 1. **Configure Dropbox App Key:**
-   - Open `assets/js/dropbox/config.js` and update the `CLIENT_ID` variable with your actual Dropbox App Key.
-   ```javascript
-   export const CLIENT_ID = 'YOUR_DROPBOX_APP_KEY'; // Replace with your actual Dropbox App Key
-   ```
-   - Make sure to replace `'YOUR_DROPBOX_APP_KEY'` with your own Dropbox App Key.
+- Open `assets/js/dropbox/config.js` and update the `CLIENT_ID` variable with your actual Dropbox App Key.
+```javascript
+export const CLIENT_ID = 'YOUR_DROPBOX_APP_KEY'; // Replace with your actual Dropbox App Key
+```
+- Make sure to replace `'YOUR_DROPBOX_APP_KEY'` with your own Dropbox App Key.
 
 ## Contributing
 
