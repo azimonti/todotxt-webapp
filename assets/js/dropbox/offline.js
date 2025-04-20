@@ -1,15 +1,14 @@
-// import { PENDING_UPLOAD_KEY  } from './config.js'; // No longer using single global key
-import { logVerbose, warnVerbose } from '../todo-logging.js';
+'use strict';
+
+import { logVerbose } from '../todo-logging.js';
 import { updateSyncIndicator, SyncStatus } from './ui.js';
 import { getAccessToken } from './auth.js'; // To check if logged in
 import { getActiveFile } from '../todo-storage.js'; // To check active file status
-// Import coordinator for sync trigger
-// import { coordinateSync } from '../sync-coordinator.js'; // Import dynamically later
 
 // Helper to generate dynamic keys for pending status
 function getDynamicPendingKey(filePath) {
   if (!filePath) {
-    warnVerbose(`Cannot generate dynamic pending key without a file path.`);
+    console.warn(`Cannot generate dynamic pending key without a file path.`);
     return null;
   }
   const safePath = filePath.replace(/\//g, '_');

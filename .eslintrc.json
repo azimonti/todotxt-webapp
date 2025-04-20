@@ -18,6 +18,9 @@
   "globals": {
     "$": "readonly",
     "bootstrap": "readonly",
-    "katex": "readonly"
+    "Dropbox": "readonly",
+    "i18next": "readonly",
+    "katex": "readonly",
+    "showNotification": "readonly"
   }
 }

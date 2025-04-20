@@ -1,5 +1,7 @@
 // Dropbox App Configuration
-export const CLIENT_ID = 'itl0pexh8y06vl7'; // Replace with your actual Dropbox App Key
+'use strict';
+
+export const CLIENT_ID = 'YOUR_DROPBOX_APP_KEY'; // Replace with your actual Dropbox App Key
 // Construct the full redirect URI dynamically to work across different paths
 // This requires the exact full path URI (e.g., http://localhost:8000/apps/sandbox/todotxt/)
 // to be registered in the Dropbox App Console for each environment.

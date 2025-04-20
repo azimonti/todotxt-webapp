@@ -1,10 +1,12 @@
+'use strict';
+
 import { logVerbose } from '../todo-logging.js';
 // Import function to get last sync time and active file
-import { getLastSyncTime, getActiveFile } from '../todo-storage.js'; // Added imports
+import { getLastSyncTime, getActiveFile } from '../todo-storage.js';
 
 // --- Sync Status Indicator ---
 export const SyncStatus = {
-  IDLE: 'idle', // Or Synced
+  IDLE: 'idle',
   SYNCING: 'syncing',
   PENDING: 'pending',
   OFFLINE: 'offline',

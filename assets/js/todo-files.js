@@ -1,4 +1,4 @@
-/* global jsTodoTxt, showNotification */
+/* global jsTodoTxt */
 'use strict';
 
 import {

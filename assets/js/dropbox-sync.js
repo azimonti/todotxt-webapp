@@ -1,7 +1,8 @@
+'use strict';
+
 import { initializeAuthentication } from './dropbox/auth.js';
 import { initializeOfflineHandling } from './dropbox/offline.js';
-// import { uploadTodosToDropbox } from './dropbox/api.js'; // No longer re-exporting upload
-import { initializeSyncCoordinator } from './todo-sync-coordinator.js'; // Import coordinator initializer
+import { initializeSyncCoordinator } from './todo-sync-coordinator.js';
 import { logVerbose } from './todo-logging.js';
 
 /**

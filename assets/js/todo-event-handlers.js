@@ -1,4 +1,5 @@
 /* global jsTodoTxt, ClipboardJS */
+'use strict';
 
 import { projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, todoList } from './todo.js';
 import { addTodoToStorage, removeTodoFromStorage, getTodosFromStorage } from './todo-storage.js';

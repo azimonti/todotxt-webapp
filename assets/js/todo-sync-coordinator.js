@@ -1,11 +1,11 @@
 'use strict';
 
 import { getActiveFile, getLocalLastModified, getTodosFromStorage, setLastSyncTime } from './todo-storage.js';
-import { getDbxInstance, getDropboxFileMetadata, downloadTodosFromDropbox, uploadTodosToDropbox } from './dropbox/api.js'; // upload/download will be refactored next
+import { getDbxInstance, getDropboxFileMetadata, downloadTodosFromDropbox, uploadTodosToDropbox } from './dropbox/api.js';
 import { saveTodosFromText, loadTodos } from './todo-load.js';
 import { updateSyncIndicator, showConflictModal, SyncStatus } from './dropbox/ui.js';
-import { clearUploadPending, isUploadPending, setUploadPending } from './dropbox/offline.js'; // Assuming isUploadPending exists or will be added
-import { logVerbose, warnVerbose } from './todo-logging.js';
+import { clearUploadPending, isUploadPending, setUploadPending } from './dropbox/offline.js';
+import { logVerbose } from './todo-logging.js';
 
 let syncDebounceTimer = null;
 const SYNC_DEBOUNCE_DELAY = 3000; // 3 seconds delay before syncing after local change
@@ -29,14 +29,14 @@ export async function coordinateSync() {
 
   const dbx = getDbxInstance(); // Check if API is initialized
   if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot sync.');
+    console.warn('Dropbox API not initialized. Cannot sync.');
     // Status should reflect NOT_CONNECTED if logged out, or initial state.
     // Don't force an error indicator here unless appropriate.
     return;
   }
 
   if (!navigator.onLine) {
-    warnVerbose('Cannot sync, application is offline.');
+    console.warn('Cannot sync, application is offline.');
     updateSyncIndicator(SyncStatus.OFFLINE, '', activeFilePath);
     // Ensure upload pending flag is set if there were recent changes
     // Note: The 'localDataChanged' event won't fire if offline changes occur *before* load.
@@ -225,7 +225,7 @@ function handleLocalDataChange(event) {
 
     // Set pending flag immediately if offline
     if (!navigator.onLine) {
-      warnVerbose(`Offline: Setting upload pending flag for ${activeFilePath} due to local change.`);
+      console.warn(`Offline: Setting upload pending flag for ${activeFilePath} due to local change.`);
       setUploadPending(activeFilePath);
     }
 

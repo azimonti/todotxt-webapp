@@ -1,4 +1,4 @@
-// assets/js/todo-ui.js
+'use strict';
 
 // Helper to get color based on priority
 function getPriorityColor(priority) {

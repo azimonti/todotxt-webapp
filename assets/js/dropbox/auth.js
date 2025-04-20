@@ -1,8 +1,9 @@
-/* global Dropbox */ // Inform linter about globals
+'use strict';
+
 import { CLIENT_ID, REDIRECT_URI, ACCESS_TOKEN_KEY } from './config.js';
-import { logVerbose, warnVerbose } from '../todo-logging.js'; // Added warnVerbose
+import { logVerbose } from '../todo-logging.js';
 import { updateAuthButton, updateSyncIndicator, SyncStatus } from './ui.js';
-import { initializeDropboxApi, getDbxInstance } from './api.js'; // Added getDbxInstance
+import { initializeDropboxApi, getDbxInstance } from './api.js'; 
 // Imports for file discovery
 import { getKnownFiles, addKnownFile, DEFAULT_FILE_PATH } from '../todo-storage.js';
 import { updateFileSelectionUI } from '../todo-files.js';
@@ -145,7 +146,7 @@ async function discoverDropboxFiles() {
   logVerbose('Starting Dropbox file discovery...');
   const dbx = getDbxInstance();
   if (!dbx) {
-    warnVerbose('Cannot discover files: Dropbox API not initialized.');
+    console.warn('Cannot discover files: Dropbox API not initialized.');
     return;
   }
 
@@ -199,7 +200,7 @@ async function discoverDropboxFiles() {
     // (This is usually handled by getKnownFiles, but double-check)
     const currentKnownFiles = getKnownFiles();
     if (!currentKnownFiles.some(f => f.path === DEFAULT_FILE_PATH)) {
-      warnVerbose("Default file path still missing after discovery, adding it.");
+      console.warn("Default file path still missing after discovery, adding it.");
       addKnownFile('todo.txt', DEFAULT_FILE_PATH);
       updateFileSelectionUI();
     }

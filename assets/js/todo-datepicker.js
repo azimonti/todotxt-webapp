@@ -1,4 +1,5 @@
 'use strict';
+
 $(document).ready(function() {
   // Initialize the date picker
   $('.date-picker').each(function(){

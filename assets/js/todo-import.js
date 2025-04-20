@@ -1,10 +1,10 @@
-/* global jsTodoTxt, showNotification */
+/* global jsTodoTxt  */
 'use strict';
 
 import { addTodoToStorage } from './todo-storage.js';
 import { loadTodos } from './todo-load.js';
 import { todoList } from './todo.js';
-import { logVerbose } from './todo-logging.js'; // Added logging
+import { logVerbose } from './todo-logging.js';
 
 /**
  * Processes the imported text content, adding valid todo items to storage.

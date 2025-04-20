@@ -1,9 +1,6 @@
-/* global Dropbox */ // Inform linter about globals
-// import { TODO_FILENAME  } from './config.js'; // No longer needed, use dynamic paths
-import { logVerbose, warnVerbose } from '../todo-logging.js';
-// Removed imports for ui, offline, todo-storage, todo-load as they are handled by coordinator
-// Keep auth import for logout on error
-// import { logoutFromDropbox } from './auth.js'; // Import dynamically later if needed
+'use strict';
+
+import { logVerbose } from '../todo-logging.js';
 
 let dbx = null; // The main Dropbox API object instance
 
@@ -68,7 +65,7 @@ export function getDbxInstance() { // Added export
  */
 export async function getDropboxFileMetadata(filePath) {
   if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot get metadata.');
+    console.warn('Dropbox API not initialized. Cannot get metadata.');
     return null;
   }
   if (!filePath) {
@@ -114,7 +111,7 @@ export async function getDropboxFileMetadata(filePath) {
  */
 export async function downloadTodosFromDropbox(filePath) {
   if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot download.');
+    console.warn('Dropbox API not initialized. Cannot download.');
     return { success: false, content: null };
   }
   if (!filePath) {
@@ -187,14 +184,14 @@ export async function uploadTodosToDropbox(filePath, todoFileContent) {
   // Check online status first - Coordinator should ideally check before calling,
   // but double-check here for robustness.
   if (!navigator.onLine) {
-    warnVerbose(`Upload attempt for ${filePath} cancelled: Application is offline.`);
+    console.warn(`Upload attempt for ${filePath} cancelled: Application is offline.`);
     // Coordinator should have set pending flag already if needed.
     return false; // Indicate failure (cannot upload offline)
   }
 
   // Check if Dropbox API is initialized
   if (!dbx) {
-    warnVerbose(`Dropbox API not initialized. Cannot upload ${filePath}.`);
+    console.warn(`Dropbox API not initialized. Cannot upload ${filePath}.`);
     // updateSyncIndicator(SyncStatus.ERROR, 'Dropbox not initialized', filePath); // Coordinator handles UI
     return false; // Indicate failure
   }
@@ -250,7 +247,7 @@ export async function uploadTodosToDropbox(filePath, todoFileContent) {
  */
 export async function renameDropboxFile(oldPath, newPath) {
   if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot rename file.');
+    console.warn('Dropbox API not initialized. Cannot rename file.');
     return false;
   }
   if (!oldPath || !newPath) {
@@ -307,7 +304,7 @@ export async function renameDropboxFile(oldPath, newPath) {
  */
 export async function deleteDropboxFile(filePath) {
   if (!dbx) {
-    warnVerbose('Dropbox API not initialized. Cannot delete file.');
+    console.warn('Dropbox API not initialized. Cannot delete file.');
     return false;
   }
   if (!filePath) {

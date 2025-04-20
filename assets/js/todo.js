@@ -1,28 +1,15 @@
-/* global showNotification */
 /* NOTE: This file (todo.js) should primarily contain imports and top-level initialization. */
 /* Avoid adding complex function definitions directly here. Use separate modules and import them. */
 'use strict';
 
 import { loadTodos } from './todo-load.js';
 import './todo-event-handlers.js';
-import {
-  getKnownFiles,
-  getActiveFile,
-  DEFAULT_FILE_PATH // Import DEFAULT_FILE_PATH for checks
-} from './todo-storage.js';
+import { getKnownFiles, getActiveFile, DEFAULT_FILE_PATH } from './todo-storage.js';
 import './todo-import.js';
 import { setupDropdownHandlers } from './todo-dropdowns.js';
 import { initializeDropboxSync } from './dropbox-sync.js';
-import { logVerbose } from './todo-logging.js'; // Import logging
-import {
-  setupAddFileModalListeners,
-  setupRenameFileModalListeners,
-  toggleTodoCompletion,
-  startEditTodo,
-  deleteTodoItem,
-  updateFileSelectionUI,
-  setupDeleteFileConfirmListener // Import the new listener setup
-} from './todo-files.js'; // Updated import path
+import { logVerbose } from './todo-logging.js';
+import { setupAddFileModalListeners, setupRenameFileModalListeners, toggleTodoCompletion, startEditTodo, deleteTodoItem, updateFileSelectionUI, setupDeleteFileConfirmListener } from './todo-files.js';
 
 // DOM Elements remain accessible globally via $
 const todoInput = $('#todoInput');
@@ -47,15 +34,7 @@ let addFileModalInstance = null;
 let renameFileModalInstance = null;
 // Delete modal instance is handled within its own logic
 
-// Export DOM elements and potentially functions needed by other modules (like event handlers)
-// Review if toggleTodoCompletion, startEditTodo, deleteTodoItem are truly needed here
-// If event-handlers.js imports them, keep them. Otherwise, remove.
-// Assuming event-handlers.js might need them:
 export { todoList, toggleTodoCompletion, startEditTodo, deleteTodoItem, projectSelect, contextSelect, todoInput, addButton, prioritySelect, filterButton, copyAllButton };
-
-
-// --- All functions moved to todo-logic.js ---
-
 
 $(document).ready(function () {
   // Modal instances are initialized when first opened below
@@ -104,11 +83,8 @@ $(document).ready(function () {
     }
   });
 
-  // REMOVED standalone addFileForm.submit handler (logic moved to setupAddFileModalListeners)
-
-
   // Show Rename File Modal when button is clicked
-  renameFileButton.click(async function() { // <-- Make this async
+  renameFileButton.click(async function() {
     try {
       const renameModalElement = document.getElementById('renameFileModal');
       if (!renameModalElement) {
@@ -159,9 +135,6 @@ $(document).ready(function () {
     }
   });
 
-  // REMOVED standalone renameFileForm.submit handler (logic moved to setupRenameFileModalListeners)
-
-
   // Delete File Button Click Handler
   deleteFileButton.click(async function() {
     const filePathToDelete = getActiveFile();
@@ -201,11 +174,5 @@ $(document).ready(function () {
       showNotification("Error: Delete confirmation dialog component is missing.", 'alert');
     }
     // --- End modal replacement ---
-
-    // The actual deletion logic is now handled by the listener setup in setupDeleteFileConfirmListener()
-    // which is called once in $(document).ready()
   });
-
-  // REMOVED standalone delete confirmation listener (moved to setupDeleteFileConfirmListener in todo-logic.js)
-
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-import { logVerbose, warnVerbose } from './todo-logging.js'; // Import logging functions
+import { logVerbose } from './todo-logging.js';
 
 // --- Constants ---
 const KNOWN_FILES_KEY = 'todoFiles'; // Stores array of { name: string, path: string }
@@ -15,7 +15,7 @@ export function generateUniqueId() {
 
 function getDynamicStorageKey(baseKey, filePath) {
   if (!filePath) {
-    warnVerbose(`Cannot generate dynamic key for base "${baseKey}" without a file path.`);
+    console.warn(`Cannot generate dynamic key for base "${baseKey}" without a file path.`);
     return null; // Or handle appropriately
   }
   // Replace slashes to create a valid key, ensure uniqueness
@@ -56,7 +56,7 @@ export function getKnownFiles() {
       } else {
         // If list exists but missing default, just add it for the return value
         // It will be saved if other operations modify the list later
-        warnVerbose("Default file path missing from known files list, adding temporarily.");
+        console.warn("Default file path missing from known files list, adding temporarily.");
         files.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
       }
     }
@@ -77,7 +77,7 @@ export function saveKnownFiles(filesArray) {
   }
   // Ensure default file is always present
   if (!filesArray.some(file => file.path === DEFAULT_FILE_PATH)) {
-    warnVerbose("Default file path missing from saveKnownFiles input, adding it.");
+    console.warn("Default file path missing from saveKnownFiles input, adding it.");
     filesArray.unshift({ name: 'todo.txt', path: DEFAULT_FILE_PATH });
   }
   localStorage.setItem(KNOWN_FILES_KEY, JSON.stringify(filesArray));
@@ -90,7 +90,7 @@ export function addKnownFile(name, path) {
   }
   const files = getKnownFiles();
   if (files.some(file => file.path === path)) {
-    warnVerbose(`File with path "${path}" already exists.`);
+    console.warn(`File with path "${path}" already exists.`);
     return false; // Indicate file already exists
   }
   files.push({ name, path });
@@ -106,11 +106,11 @@ export function renameKnownFile(oldPath, newName, newPath) {
   const files = getKnownFiles();
   const index = files.findIndex(file => file.path === oldPath);
   if (index === -1) {
-    warnVerbose(`Cannot find file with path "${oldPath}" to rename.`);
+    console.warn(`Cannot find file with path "${oldPath}" to rename.`);
     return false;
   }
   if (files.some(file => file.path === newPath && file.path !== oldPath)) {
-    warnVerbose(`File with new path "${newPath}" already exists.`);
+    console.warn(`File with new path "${newPath}" already exists.`);
     return false; // Prevent renaming to an existing path
   }
   // --- Move associated data in localStorage ---
@@ -142,7 +142,7 @@ export function renameKnownFile(oldPath, newName, newPath) {
         logVerbose(`Moved last sync timestamp for ${oldPath} to ${newPath}`);
       }
     } else {
-      warnVerbose(`No todo data found for ${oldPath} to move during rename.`);
+      console.warn(`No todo data found for ${oldPath} to move during rename.`);
       // Ensure old keys are removed even if no data existed
       if (oldLocalModKey) localStorage.removeItem(oldLocalModKey);
       if (oldSyncTimeKey) localStorage.removeItem(oldSyncTimeKey);
@@ -173,7 +173,7 @@ export function removeKnownFile(pathToRemove) {
     return false;
   }
   if (pathToRemove === DEFAULT_FILE_PATH) {
-    warnVerbose("Cannot remove the default file.");
+    console.warn("Cannot remove the default file.");
     return false; // Prevent removing the default file
   }
   let files = getKnownFiles();
@@ -196,7 +196,7 @@ export function removeKnownFile(pathToRemove) {
     logVerbose(`Removed stored data for file: ${pathToRemove}`);
     return true;
   } else {
-    warnVerbose(`Could not find file with path "${pathToRemove}" to remove.`);
+    console.warn(`Could not find file with path "${pathToRemove}" to remove.`);
     return false;
   }
 }
@@ -220,13 +220,13 @@ export function getTodosFromStorage() {
         // It assumes the old format exists under the *new* dynamic key.
         // Consider if migration is still needed or how it should work.
         // For now, let's assume new format or empty for new keys.
-        warnVerbose("Old storage format detected under new key system. This might indicate an issue. Resetting for this file.", storageKey);
+        console.warn("Old storage format detected under new key system. This might indicate an issue. Resetting for this file.", storageKey);
         todos = [];
         // saveTodosToStorage(todos); // Avoid recursive call during get
       } else if (Array.isArray(parsedData) && (parsedData.length === 0 || (typeof parsedData[0] === 'object' && Object.prototype.hasOwnProperty.call(parsedData[0], 'id') && Object.prototype.hasOwnProperty.call(parsedData[0], 'text')))) {
         todos = parsedData; // Correct format
       } else {
-        warnVerbose(`Invalid data format in localStorage for key "${storageKey}". Resetting todos for this file.`);
+        console.warn(`Invalid data format in localStorage for key "${storageKey}". Resetting todos for this file.`);
         todos = [];
         // saveTodosToStorage(todos); // Avoid recursive call during get
       }
@@ -333,7 +333,7 @@ export function updateTodoInStorage(idToUpdate, newItem) {
     todos[index].text = newItem.toString(); // Assuming newItem is a TodoTxtItem object or similar
     saveTodosToStorage(todos); // Saves todos for the active file and dispatches event
   } else {
-    warnVerbose(`Could not find todo with ID "${idToUpdate}" in active file "${getActiveFile()}" to update.`);
+    console.warn(`Could not find todo with ID "${idToUpdate}" in active file "${getActiveFile()}" to update.`);
   }
 }
 
@@ -345,6 +345,6 @@ export function removeTodoFromStorage(idToDelete) {
   if (todos.length < initialLength) {
     saveTodosToStorage(todos); // Saves todos for the active file and dispatches event
   } else {
-    warnVerbose(`Could not find todo with ID "${idToDelete}" in active file "${getActiveFile()}" to delete.`);
+    console.warn(`Could not find todo with ID "${idToDelete}" in active file "${getActiveFile()}" to delete.`);
   }
 }
