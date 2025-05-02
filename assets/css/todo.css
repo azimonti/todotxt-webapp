@@ -241,16 +241,16 @@ body {
 }
 
 /* File list specific styles */
-#fileListSidebar .nav-link {
+.file-list-sidebar .nav-link {
   cursor: pointer;
   padding: 0.5rem 1rem; /* Adjust padding */
 }
 
-#fileListSidebar .nav-link.active {
+.file-list-sidebar .nav-link.active {
   background-color: #e9ecef; /* Highlight active file */
   color: #000;
 }
 
-#fileListSidebar .nav-link:hover {
+.file-list-sidebar .nav-link:hover {
   background-color: #f8f9fa; /* Hover effect */
 }

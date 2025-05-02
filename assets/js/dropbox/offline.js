@@ -2,8 +2,8 @@
 
 import { logVerbose } from '../todo-logging.js';
 import { updateSyncIndicator, SyncStatus } from './ui.js';
-import { getAccessToken } from './auth.js'; // To check if logged in
-import { getActiveFile } from '../todo-storage.js'; // To check active file status
+import { getAccessToken } from './auth.js';
+import { getActiveFile } from '../todo-storage.js';
 
 // Helper to generate dynamic keys for pending status
 function getDynamicPendingKey(filePath) {
@@ -25,7 +25,6 @@ export function isUploadPending(filePath) {
   const key = getDynamicPendingKey(filePath);
   if (!key) return false;
   const pending = localStorage.getItem(key) === 'true';
-  // logVerbose(`Checking pending upload flag for ${filePath}: ${pending}`); // Can be noisy
   return pending;
 }
 
@@ -79,13 +78,12 @@ async function handleOnlineStatus() {
 
     // Dynamically import and call the coordinator's sync function
     try {
-      const { coordinateSync } = await import('../todo-sync-coordinator.js');
+      const { coordinateSync } = await import('../todo-sync-coordinator.js'); // Corrected path
       await coordinateSync(); // Attempt sync for the active file
       // coordinateSync will handle the final status update (IDLE or ERROR)
     } catch (err) {
       console.error(`Error triggering coordinateSync for ${activeFilePath} after coming online:`, err);
       // If coordinateSync fails, it should update the indicator itself.
-      // We might want a fallback here just in case.
       updateSyncIndicator(SyncStatus.ERROR, 'Sync after reconnect failed', activeFilePath);
       // Keep the flag set? coordinateSync should ideally clear it on success.
     }
@@ -95,7 +93,6 @@ async function handleOnlineStatus() {
     // Set status to IDLE for the active file for now.
     logVerbose(`Online and no pending upload for active file (${activeFilePath}). Setting status to IDLE.`);
     updateSyncIndicator(SyncStatus.IDLE, '', activeFilePath);
-    // Consider triggering coordinateSync anyway to check for remote changes?
     // For now, let's only sync if pending changes were flagged.
   }
 }

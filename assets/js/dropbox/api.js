@@ -2,15 +2,16 @@
 
 import { logVerbose } from '../todo-logging.js';
 
-let dbx = null; // The main Dropbox API object instance
+let dbx = null; // Dropbox API instance (Dropbox class)
 
 /**
- * Initializes the main Dropbox API object with the access token.
- * Also triggers the initial sync check.
- * @param {string | null} token - The Dropbox access token, or null to de-initialize.
+ * Initializes or updates the main Dropbox API object using the DropboxAuth instance.
+ * Also triggers the initial sync check upon successful initialization.
+ * @param {Dropbox.DropboxAuth | null} authInstance - The initialized DropboxAuth object, or null to de-initialize.
  */
-export async function initializeDropboxApi(token) {
-  if (!token) {
+export async function initializeDropboxApi(authInstance) {
+
+  if (!authInstance) {
     logVerbose('De-initializing Dropbox API (token is null).');
     dbx = null;
     // Status should be handled by logout function or initial state
@@ -19,25 +20,43 @@ export async function initializeDropboxApi(token) {
 
   if (typeof Dropbox === 'undefined') {
     console.error('Dropbox SDK not loaded, cannot initialize API.');
-    // updateSyncIndicator(SyncStatus.ERROR, 'Dropbox SDK failed to load'); // Coordinator handles UI
+    dbx = null; // Ensure dbx is null
     return;
   }
 
-  if (dbx && dbx.accessToken === token) {
-    logVerbose('Dropbox API already initialized with the same token.');
-    return; // Avoid re-initialization if token hasn't changed
+  // Check if we have an access token in the auth instance
+  const currentAccessToken = authInstance.getAccessToken();
+  if (!currentAccessToken) {
+    logVerbose('Cannot initialize Dropbox API: No access token in auth instance.');
+    dbx = null;
+    return;
   }
 
-  logVerbose('Initializing Dropbox API...');
-  try {
-    dbx = new Dropbox.Dropbox({ accessToken: token });
-    logVerbose('Dropbox API initialized successfully.');
+  // Avoid re-initialization if the underlying access token hasn't changed
+  // Note: This check might be less critical now as dbxAuth manages state,
+  // but can prevent unnecessary object creation.
+  if (dbx && dbx.auth.getAccessToken() === currentAccessToken) {
+    logVerbose('Dropbox API appears to be initialized with the same token state.');
+    return;
+  }
 
-    // Trigger initial sync check via the coordinator (needs to be called from auth/init)
-    // Dynamically import and call the coordinator's sync function
+  logVerbose('Initializing/Updating Dropbox API instance...');
+  try {
+    // Initialize Dropbox API with the DropboxAuth instance
+    // The SDK will use this auth instance to get the access token for requests
+    // and potentially handle refreshing automatically if configured,
+    // but we'll add explicit refresh handling for robustness.
+    dbx = new Dropbox.Dropbox({ auth: authInstance });
+    logVerbose('Dropbox API initialized/updated successfully.');
+
+    // Trigger initial sync check via the coordinator ONLY if dbx was newly created or updated
+    // This prevents redundant syncs if initializeDropboxApi is called multiple times
+    // without the underlying token actually changing (e.g., during refresh logic).
+    // We might need a flag or compare old/new token to be more precise.
+    // For now, let's assume if we reach here with a valid dbx, a sync check is warranted.
     // This assumes initializeDropboxApi is called *after* coordinator is initialized
     try {
-      const { coordinateSync } = await import('../todo-sync-coordinator.js');
+      const { coordinateSync } = await import('../todo-sync-coordinator.js'); // Corrected path
       await coordinateSync();
     } catch (coordError) {
       console.error("Failed to trigger initial sync via coordinator:", coordError);
@@ -45,18 +64,20 @@ export async function initializeDropboxApi(token) {
 
   } catch (error) {
     console.error('Error initializing Dropbox API object:', error);
-    // updateSyncIndicator(SyncStatus.ERROR, 'Failed to initialize Dropbox API'); // Coordinator handles UI
     dbx = null; // Ensure dbx is null if initialization failed
   }
 }
 
 /**
- * Returns the initialized Dropbox API instance.
- * @returns {Dropbox | null} The Dropbox instance or null if not initialized.
+ * Returns the initialized Dropbox API instance (Dropbox class).
+ * @returns {Dropbox.Dropbox | null} The Dropbox instance or null if not initialized.
  */
-export function getDbxInstance() { // Added export
+export function getDbxInstance() {
+  // Maybe add a check here? If !dbx but dbxAuth exists and has tokens, try init?
+  // For now, keep it simple.
   return dbx;
 }
+// --- End API Call Wrapper ---
 
 /**
  * Fetches metadata for a specific todo list file from Dropbox.
@@ -348,5 +369,3 @@ export async function deleteDropboxFile(filePath) {
     return false;
   }
 }
-
-// Removed syncWithDropbox function as its logic is now in sync-coordinator.js
