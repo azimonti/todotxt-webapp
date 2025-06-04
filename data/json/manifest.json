@@ -3,6 +3,7 @@
     "short_name": "Todo.txt",
     "description": "A simple web application for managing your todo.txt file.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#F8F8F2",
     "theme_color": "#0083B3",
